@@ -1,0 +1,82 @@
+######################
+# OS generated files #
+######################
+.DS_Store*
+vendor
+
+################
+# Single files #
+################
+/public/.htaccess
+/public/index.php
+
+##################################
+# TYPO3 specific files & folders #
+##################################
+/public/fileadmin
+/public/uploads
+
+#################
+# TYPO3 sources #
+#################
+/public/typo3
+/public/typo3_src*
+
+######################
+# TYPO3 config files #
+######################
+/public/typo3conf/ENABLE_INSTALL_TOOL
+/public/typo3conf/deprecation_*
+/config/typo3/AdditionalConfiguration.php
+/public/typo3conf/autoload-tests
+
+###################
+# TYPO3 Extension #
+###################
+/public/typo3conf/ext/*
+!/public/typo3conf/ext/site_package
+/public/typo3conf/ext/site_package/Resources/Public/*
+!/public/typo3conf/ext/site_package/Resources/Public/Icons
+!/public/typo3conf/ext/site_package/Resources/Public/Images
+
+##############
+# Temp files #
+##############
+/public/typo3conf/temp_*
+/public/typo3conf/l10n
+/public/typo3temp/
+/var/
+_processed_
+/config/*.cache
+/config/typo3/*/Custom/AdditionalConfiguration.php
+
+######################
+# DB dumps & helpers #
+######################
+/files/*.sh
+/files/*.gz
+
+############
+# PhpStorm #
+############
+/.idea/
+
+###############
+# Build tools #
+###############
+
+
+#######
+# Dev #
+#######
+/docker-compose.override.yml
+!/files/typo3.sql.gz
+/config/pathconfig
+/.env
+
+#####################
+# Global exceptions #
+#####################
+
+!.index.html
+!.gitkeep

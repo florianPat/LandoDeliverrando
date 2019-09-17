@@ -1,0 +1,10 @@
+name: deliverrando
+recipe: lamp
+config:
+  php: '7.3'
+  webroot: ./public
+  xdebug: true
+services:
+  mailhog:
+    type: mailhog:v1.0.0
+    portforward: false
