@@ -1,0 +1,25 @@
+lib.dynamicContent = COA
+lib.dynamicContent {
+    10 = CONTENT
+    10 {
+        // Which table (so wie FROM)
+        table = tt_content
+        select {
+            // page id of current page
+            pidInList = this
+
+            orderBy = sorting
+
+            // Was für Attribute es gibt kann man (glaub ich) hier nachschauen: https://github.com/TYPO3/TYPO3.CMS/blob/master/typo3/sysext/frontend/Configuration/TCA/tt_content.php
+            where = colPos = ###colPos###
+
+            markers {
+                colPos.cObject = TEXT
+                colPos.cObject.value.field = colPos
+                colPos.cObject.value.ifEmpty = 0
+            }
+        }
+    }
+}
+
+lib.login < tt_content.login

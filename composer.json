@@ -1,10 +1,10 @@
 {
-	"name": "Deliverrando",
+	"name": "patruck/deliverrando",
 	"description" : "Order food web app",
 	"license": "GPL-2.0-or-later",
 	"config": {
 		"platform": {
-			"php": "7.2"
+			"php": "7.3"
 		}
 	},
 	"require": {
@@ -33,7 +33,7 @@
 	},
 	"autoload": {
         "psr-4": {
-            "MyVendor\\SitePackage\\": "public/typo3conf/ext/site_package/Classes/"
+            "MyVendor\\Deliverrando\\": "public/typo3conf/ext/deliverrando/Classes/"
         }
     },
     "scripts": {

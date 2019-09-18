@@ -1,0 +1,61 @@
+<INCLUDE_TYPOSCRIPT: source="FILE:typo3/sysext/extbase/ext_typoscript_setup.txt">
+<INCLUDE_TYPOSCRIPT: source="FILE:EXT:fluid_styled_content/Configuration/TypoScript/setup.txt">
+<INCLUDE_TYPOSCRIPT: source="FILE:EXT:deliverrando/Configuration/TypoScript/Default/Helper/DynamicContent.typoscript">
+
+//NOTE: The storagePid that one would set in the backend
+plugin.tx_deliverrando.persistence.storagePid = 10
+
+page = PAGE
+page {
+    //NOTE: The typeNum for an output other then html (can be anything?, but not 0, because thats html)
+    typeNum = 100
+
+    //NOTE: list = plugin. The extensionKey_pluginName are needed here!
+    //10 =< tt_content.list.20.deliverrando_productlist
+
+    10 = CASE
+    10 {
+        key.cObject = USER
+        key.cObject.userFunc = MyVendor\Deliverrando\TypoScriptUserFunc\DynamicPluginBound->getSelectedPluginForTemplate
+
+        //TODO: Hard coding these was not my intention, but this is the only solution I know of right now!
+        deliverrando_productlist =< tt_content.list.20.deliverrando_productlist
+        deliverrando_bestellungen =< tt_content.list.20.deliverrando_bestellungen
+    }
+
+    config {
+        absRefPrefix = auto
+        cache_period = 0
+        debug = 1
+        disablePrefixComment = 1
+        doctype = html5
+        extTarget =
+        index_enable = 1
+        index_externals = 1
+        index_metatags = 1
+        inlineStyle2TempFile = 1
+        intTarget =
+        linkVars = L
+        metaCharset = utf-8
+        pageTitleFirst = 1
+        prefixLocalAnchors = all
+        removeDefaultJS = 0
+        renderCharset = utf-8
+        sendCacheHeaders = 1
+        uniqueLinkVars = 1
+
+        // Disable image upscaling
+        noScaleUp = 1
+
+        // Compression and concatenation of CSS and JS Files
+        compressCss = 0
+        compressJs = 0
+        concatenateCss = 0
+        concatenateJs = 0
+
+        disableAllHeaderCode = 1
+        additionalHeaders = Content-type:application/json
+        no_cache = 1
+        admPanel = 0
+    }
+}

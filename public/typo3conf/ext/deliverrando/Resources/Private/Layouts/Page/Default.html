@@ -1,0 +1,46 @@
+<nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
+   <a class="navbar-brand" href="/en/">Home</a>
+   <button  class="navbar-toggler"
+            type="button"
+            data-toggle="collapse"
+            data-target="#navbarsExampleDefault"
+            aria-controls="navbarsExampleDefault"
+            aria-expanded="false"
+            aria-label="Toggle navigation"
+            >
+      <span class="navbar-toggler-icon"></span>
+   </button>
+   <div class="collapse navbar-collapse" id="navbarsExampleDefault">
+      <ul class="navbar-nav mr-auto">
+        <f:for each="{mainnavigation}" as="mainnavigationItem">
+          <li class="nav-item {f:if(condition: mainnavigationItem.active, then: 'active')}"
+              id="{mainnavigationItem.title}" onmouseover="showNavItem(this.id)">
+            <a class="nav-link"
+               href="{mainnavigationItem.link}"
+               target="{mainnavigationItem.target}"
+               title="{mainnavigationItem.title}"
+               >
+               {mainnavigationItem.title}
+              </a>
+          </li>
+          <f:if condition="{mainnavigationItem.children}">
+            <f:then>
+                <f:for each="{mainnavigationItem.children}" as="childItem">
+                  <li class="nav-item {mainnavigationItem.title}Child" style="background-color: #0F0F0F; display: none">
+                      <a class="nav-link"
+                         href="{childItem.link}"
+                         target="{childItem.target}"
+                         title="{childItem.title}"
+                         >
+                         {childItem.title}
+                      </a>
+                    </li>
+                </f:for>
+            </f:then>
+          </f:if>
+         </f:for>
+      </ul>
+   </div>
+</nav>
+
+<f:render section="Main" />

@@ -5,6 +5,14 @@ config:
   webroot: ./public
   xdebug: true
 services:
+  appserver:
+      overrides:
+        environment:
+          TYPO3_CONTEXT: Development/Lando
   mailhog:
     type: mailhog:v1.0.0
     portforward: false
+  node:
+    type: node:10
+    build:
+      - npm install

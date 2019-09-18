@@ -1,0 +1,53 @@
+// the page tsconfig also lets you change for example what happens if you click on a page title in the backend.
+// It 'configures' the backend??
+
+mod.web_layout.BackendLayouts {
+  twoColumns {
+    title = TwoColumns
+    config {
+      backend_layout {
+        colCount = 2
+        rowCount = 1
+        rows.1 {
+          columns.1 {
+            name = The Column
+            colPos = 0
+          }
+          columns.2 {
+            name = Right Column
+            colPos = 1
+          }
+        }
+      }
+    }
+  }
+
+  oneElement {
+    title = oneElement
+    config {
+      backend_layout {
+        colCount = 1
+        rowCount = 1
+        rows.1 {
+          columns.1 {
+            name = The Column
+            colPos = 0
+          }
+        }
+      }
+    }
+  }
+}
+
+mod.wizards.newContentElement.wizardItems.common {
+  elements {
+    deliverrando_largeimagetext {
+      title = LargeImageWithText
+      description = A large picture with text
+      tt_content_defValues {
+        CType = deliverrando_largeimagetext
+      }
+    }
+  }
+  show := addToList(deliverrando_largeimagetext)
+}

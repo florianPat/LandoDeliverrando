@@ -1,0 +1,27 @@
+lib.contentElement {
+    templateRootPaths {
+        200 = EXT:deliverrando/Resources/Private/Templates/Page/
+    }
+}
+
+lib.text = CONTENT
+lib.text {
+    table = tt_content
+    select {
+        selectFields = header
+        where = uid = 18
+    }
+    renderObj = TEXT
+    renderObj.field = header
+}
+
+tt_content {
+    deliverrando_largeimagetext =< lib.contentElement
+    deliverrando_largeimagetext {
+        templateName = LargeImageText
+
+        dataProcessing {
+            1 = MyVendor\Deliverrando\DataProcessing\LargePictureWithTextProcessor
+        }
+    }
+}

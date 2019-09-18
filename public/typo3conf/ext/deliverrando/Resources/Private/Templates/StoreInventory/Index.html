@@ -1,0 +1,185 @@
+<!--NOTE: wird aufgerufen, wenn die indexAction des StoreInventory controllers getriggered wird. -->
+
+<div id="vueOrderProducts">
+    <div v-if="finishedOrder">
+        <h1>Vielen Dank für ihre Bestellung!</h1>
+        <p>Sie müssen nur noch <food-counter :json-response="makeOrderJsonResponse"></food-counter> Minuten auf ihr Essen warten!</p>
+        <br />
+        <food-progress :json-response="makeOrderJsonResponse" :progress-length="makeOrderJsonResponse.quantitySum"
+                       link-get-progress-action='<f:link.action pageType="100" pageUid="6" action="progressUpdate"></f:link.action>'></food-progress>
+    </div>
+
+    <span v-show="!finishedOrder">
+        <div class="row">
+            <f:if condition="{messageText}">
+                <div class="row">
+                    <p id="operationMsg"><em>{messageText} the item <strong>"{messageProduct.name}"</strong></em></p>
+                </div>
+            </f:if>
+        </div>
+
+        <div class="row" style="background-color: white; padding: 1vw;">
+            <f:if condition="{opened}">
+                <f:then>
+                    <div class="columns-10">
+                        <h2>{delieverrandoName}</h2>
+
+                        <table border="1" cellspacing="1" cellpadding="5">
+                            <tr>
+                                <td><strong>Product name</strong></td>
+                                <td><strong>Product description</strong></td>
+                                <td><strong>Quantity</strong></td>
+                                <td><strong>Time of delievery</strong></td>
+                                <td><strong>Categories</strong></td>
+                            </tr>
+                            <f:for each="{products}" as="product">
+                                <tr>
+                                    <td align="top">{product.name}</td>
+                                    <td align="top"><f:format.crop maxCharacters="100">{product.description}</f:format.crop></td>
+                                    <td align="top">{product.quantity}</td>
+                                    <td align="top">{product.deliverytime}</td>
+                                    <td align="top">
+                                        <f:for each="{product.categories}" as="category" iteration="it">
+                                            <f:if condition="{it.isLast}">
+                                                <f:then>
+                                                    {category.name}
+                                                </f:then>
+                                                <f:else>
+                                                    {category.name},
+                                                </f:else>
+                                            </f:if>
+                                        </f:for>
+                                    </td>
+                                    <f:if condition="{personLoggedIn}">
+                                        <td align="top">
+                                            <a @click="$emit('addProductToOrder', '{product.name}')">
+                                                <img src="typo3conf/ext/deliverrando/Resources/Public/Images/plus.jpg" width="20px"/>
+                                            </a>
+                                        </td>
+                                    </f:if>
+                                    <f:security.ifAuthenticated>
+                                        <td algin="top">
+                                            <f:link.action controller="StoreInventory" action="remove" arguments="{product: product}">
+                                                <strong>-</strong>
+                                            </f:link.action>
+                                        </td>
+                                    </f:security.ifAuthenticated>
+                                </tr>
+                            </f:for>
+                        </table>
+                    </div>
+                    <div class="columns-2">
+                        <shopping-card link-order-end-action='<f:link.action pageType="100" pageUid="6" action="endOrder">Jetzt bestellen</f:link.action>' />
+                    </div>
+                </f:then>
+                <f:else>
+                    <div class="columns-12">
+                        <p>Geschlossen!</p>
+                    </div>
+                </f:else>
+            </f:if>
+        </div>
+
+        <div style="display: none">
+            <f:form.validationResults>
+                <!-- does the array "errors" contain a value? -->
+                <f:if condition="{validationResults.flattenedErrors}">
+                    <!-- get the "error" array. The key is the property path and the value is an array of errors. -->
+                    <f:for each="{validationResults.flattenedErrors}" as="errors" key="propertyPath">
+                        <ul class="formValidationErrorResult">{propertyPath}<f:for each="{errors}" as="error"><li>{error.message}</li></f:for></ul>
+                    </f:for>
+                    <p id="lastAction">{lastAction}</p>
+                </f:if>
+            </f:form.validationResults>
+        </div>
+
+        <div style="background-color: ghostwhite; padding: 1vw;">
+            <!-- where your own viewhelpers are defined -->
+            {namespace myVH=MyVendor\Deliverrando\ViewHelper}
+
+            <!--Ist der user als frontend user eingeloggt?-->
+            <f:security.ifAuthenticated>
+                <!-- NOTE: wenn man name="argument" benutzt, wird das argument beim aufruf richtig gemappt. arguments="" wie bei einem link
+                     bringen gar nichts! -->
+                <!-- NOTE: name="the argument of the action" in .form und property setzt das argument!! -->
+                <f:form name="product" controller="StoreInventory" action="add">
+                    <myVH:formFieldHelp tag='<f:form.textfield property="name" required="true" />' idPrefix="addAction" />
+                    <myVH:formFieldHelp tag='<f:form.textarea property="description" required="true" />' idPrefix="addAction" />
+                    <myVH:formFieldHelp tag='<f:form.textfield property="quantity" type="number" required="true" />' idPrefix="addAction" />
+                    <myVH:formFieldHelp tag='<f:form.textfield property="deliverytime" type="number" required="true" />' idPrefix="addAction" />
+                    <!-- categoryOptions ist ein azzoiatives array, wo der key der wert des arguments ist, und das value, was man auswählen kann -->
+                    <f:form.select name="category" options="{categoryOptions}" /> <p></p><br />
+
+                    <f:form.submit value="Add"/>
+                </f:form>
+            </f:security.ifAuthenticated>
+
+            <!-- So kann man die Errors viel einfacher einbauen -->
+            <f:comment>
+                <f:form.textfield property="name" required="true" />
+                <f:render section="formError" arguments="{property: 'name'}" />
+                <f:form.textarea property="description" required="true" />
+                <f:render section="formError" arguments="{property: 'description'}" />
+                <f:form.textfield property="quantity" type="number" required="true" />
+                <f:render section="formError" arguments="{property: 'quantity'}" />
+
+                <f:section name="formError">
+                    <f:form.validationResults for="product.{property}">
+                        <!-- does the array "errors" contain a value? -->
+                        <f:if condition="{validationResults.flattenedErrors}">
+                            <!-- get the "error" array. The key is the property path and the value is an array of errors. -->
+                            <f:for each="{validationResults.flattenedErrors}" as="errors" key="propertyPath">
+                                <ul class="formValidationErrorResult">{propertyPath}<f:for each="{errors}" as="error"><li>{error.message}
+                                    <f:translate key="error.product.{property}.{error.code}" /> 'error.product.{property}.{error.code}'
+                                </li></f:for></ul>
+                            </f:for>
+                            <p id="lastAction">{lastAction}</p>
+                        </f:if>
+                    </f:form.validationResults>
+                </f:section>
+            </f:comment>
+        </div>
+
+        <br>
+
+        <div style="background-color: whitesmoke; padding: 1vw;">
+        <f:security.ifAuthenticated>
+            <f:then>
+                <f:cObject typoscriptObjectPath="lib.login" />
+
+                <f:link.action action="index" id="redirectLinkThing" style="display: none"></f:link.action>
+            </f:then>
+            <f:else>
+                <f:if condition="{personLoggedIn}">
+                    <f:then>
+                        <f:link.action action="logout" controller="StoreInventory">Logout</f:link.action>
+                    </f:then>
+                    <f:else>
+                        <h5>Zurzeit bist du noch ein Besucher!</h5>
+                        <f:link.page pageUid="4">Als Anbieter anmelden...</f:link.page>
+                        <br />
+
+                        <p>Oder als Besteller anmelden:</p>
+                        <f:form controller="StoreInventory" action="login" name="person" id="personLoginForm">
+                            <myVH:formFieldHelp tag='<f:form.textfield property="name" required="true" />' idPrefix="loginAction" />
+                            <myVH:formFieldHelp tag='<f:form.password property="password" />' idPrefix="loginAction" />
+
+                            <f:form.submit value="logIn" />
+                        </f:form>
+                        <f:form name="person" controller="StoreInventory" action="register" style="display: none" id="personRegisterForm">
+                            <myVH:formFieldHelp tag='<f:form.textfield property="name" required="true" />' idPrefix="registerAction" />
+                            <myVH:formFieldHelp tag='<f:form.password property="password" />' idPrefix="registerAction" />
+                            <myVH:formFieldHelp tag='<f:form.textfield property="address" required="true" />' idPrefix="registerAction" />
+                            <myVH:formFieldHelp tag='<f:form.textfield property="telephonenumber" />' idPrefix="registerAction" />
+                            <myVH:formFieldHelp tag='<f:form.textfield property="email" />' idPrefix="registerAction" />
+
+                            <f:form.submit value="register" />
+                        </f:form>
+                        <p id="personShowRegisterFormText">Du bist noch kein Mitglied? Einfach schnell <button class="btn" onclick="switchToRegisterForm()">hier</button> registrieren und direkt dein Lieblingsessen bestellen!</p>
+                    </f:else>
+                </f:if>
+            </f:else>
+        </f:security.ifAuthenticated>
+        </div>
+    </div>
+</div>

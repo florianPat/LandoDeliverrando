@@ -1,0 +1,15 @@
+<f:layout name="Default" />
+
+<f:section name="Main">
+    <f:render partial="Header" />
+
+    <main>
+        <div class="container">
+            <div class="row">
+                <div class="col-12">
+                    <f:cObject typoscriptObjectPath="lib.dynamicContent" />
+                </div>
+            </div>
+        </div>
+    </main>
+</f:section>

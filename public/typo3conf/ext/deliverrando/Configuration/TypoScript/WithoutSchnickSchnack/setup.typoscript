@@ -1,0 +1,70 @@
+<INCLUDE_TYPOSCRIPT: source="FILE:typo3/sysext/extbase/ext_typoscript_setup.txt">
+<INCLUDE_TYPOSCRIPT: source="FILE:EXT:fluid_styled_content/Configuration/TypoScript/setup.txt">
+<INCLUDE_TYPOSCRIPT: source="FILE:EXT:deliverrando/Configuration/TypoScript/Default/Helper/DynamicContent.typoscript">
+
+page = PAGE
+page {
+    typeNum = 0
+
+    10 = FLUIDTEMPLATE
+    10 {
+        templateName = WithoutSchnickSchnack
+
+        templateRootPaths {
+            0 = EXT:deliverrando/Resources/Private/Templates/Page/
+        }
+        partialRootPaths {
+            0 = EXT:deliverrando/Resources/Private/Partials/Page/
+        }
+        layoutRootPaths {
+            0 = EXT:deliverrando/Resources/Private/Layouts/Page/
+        }
+    }
+
+	includeCSS {
+	    bootstrap = https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css
+   	    bootstrap.external = 1
+   	}
+
+    includeJSFooter {
+        bootstrap = https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js
+        bootstrap.external = 1
+
+        main = EXT:deliverrando/Resources/Public/JavaScript/main.js
+    }
+
+    config {
+        absRefPrefix = auto
+        cache_period = 0
+        debug = 1
+        disablePrefixComment = 1
+        doctype = html5
+        extTarget =
+        index_enable = 1
+        index_externals = 1
+        index_metatags = 1
+        inlineStyle2TempFile = 1
+        intTarget =
+        linkVars = L
+        metaCharset = utf-8
+        pageTitleFirst = 1
+        prefixLocalAnchors = all
+        removeDefaultJS = 0
+        renderCharset = utf-8
+        sendCacheHeaders = 1
+        uniqueLinkVars = 1
+
+        // Disable image upscaling
+        noScaleUp = 1
+
+        // Compression and concatenation of CSS and JS Files
+        compressCss = 0
+        compressJs = 0
+        concatenateCss = 0
+        concatenateJs = 0
+
+        disableAllHeaderCode = 1
+        additionalHeaders = Content-type:application/html
+        no_cache = 1
+    }
+}

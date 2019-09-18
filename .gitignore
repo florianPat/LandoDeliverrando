@@ -34,10 +34,9 @@ vendor
 # TYPO3 Extension #
 ###################
 /public/typo3conf/ext/*
-!/public/typo3conf/ext/site_package
-/public/typo3conf/ext/site_package/Resources/Public/*
-!/public/typo3conf/ext/site_package/Resources/Public/Icons
-!/public/typo3conf/ext/site_package/Resources/Public/Images
+!/public/typo3conf/ext/deliverrando
+/public/typo3conf/ext/deliverrando/Resources/Public/*
+!/public/typo3conf/ext/deliverrando/Resources/Public/Images
 
 ##############
 # Temp files #
@@ -80,3 +79,5 @@ _processed_
 
 !.index.html
 !.gitkeep
+
+/node_modules/
