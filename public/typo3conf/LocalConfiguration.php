@@ -34,6 +34,11 @@ return [
             't3adminer' => 'a:3:{s:8:"IPaccess";s:0:"";s:14:"applyDevIpMask";s:1:"0";s:15:"exportDirectory";s:9:"fileadmin";}',
         ],
     ],
+    'EXTCONF' => [
+        'helhum-typo3-console' => [
+            'initialUpgradeDone' => '9.5',
+        ],
+    ],
     'EXTENSIONS' => [
         'backend' => [
             'backendFavicon' => '',
