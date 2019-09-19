@@ -147,7 +147,7 @@
                                 <li class="list-group-item" v-for="(productDesc, pdIndex) in order.productDescriptions">
                                     x{{ productDesc.quantity }} {{ productDesc.productName }}
                                     <input v-for="i in productDesc.quantity" @change="checkboxChange(index, pdIndex, i - 1);"
-                                        v-model="finishedOrderTracker[index].checked[pdIndex][i - 1]" type="checkbox" style="float: right; margin-left: 1vw;">
+                                        v-model="finishedOrderTracker[index].checked[pdIndex][i - 1]" type="checkbox" class="orderDisplayCheckbox">
                                 </li>
                             </ul>
                         </div>

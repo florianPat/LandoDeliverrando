@@ -57,6 +57,8 @@ page {
 	includeCSS {
 	    bootstrap = https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css
    	    bootstrap.external = 1
+
+		myCss = EXT:deliverrando/Resources/Public/Css/my.css
    	}
 
 	includeJSFooter {

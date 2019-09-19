@@ -2,6 +2,7 @@
 
 namespace MyVendor\Deliverrando\Controller;
 
+use MyVendor\Deliverrando\Domain\Model\Person;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use TYPO3\CMS\Core\Context\Context;
@@ -218,11 +219,11 @@ class StoreInventoryController extends ActionController implements LoggerAwareIn
     }
 
     /**
-     * @param \MyVendor\Deliverrando\Domain\Model\Person $person
+     * @param Person $person
      * @\TYPO3\CMS\Extbase\Annotation\Validate("\MyVendor\Deliverrando\Domain\Validator\PersonNamePasswordValidator", param="person")
      * @return void
      */
-    public function loginAction(\MyVendor\Deliverrando\Domain\Model\Person $person) : void
+    public function loginAction(Person $person) : void
     {
         $loginPerson = $this->personRepository->findByName($person->getName());
 
@@ -242,15 +243,25 @@ class StoreInventoryController extends ActionController implements LoggerAwareIn
     }
 
     /**
-     * @param \MyVendor\Deliverrando\Domain\Model\Person $registerPerson
+     * @param Person $registerPerson
      * @\TYPO3\CMS\Extbase\Annotation\Validate("\MyVendor\Deliverrando\Domain\Validator\PersonValidNameValidator", param="person")
      * @return void
      */
-    public function registerAction(\MyVendor\Deliverrando\Domain\Model\Person $person) : void
+    public function registerAction(Person $person) : void
     {
         $passwordHash = GeneralUtility::makeInstance(PasswordHashFactory::class)->getDefaultHashInstance('FE');
 
         $person->setPassword($passwordHash->getHashedPassword($person->getPassword()));
+
+        $this->view->assign('person', $person);
+    }
+
+    /**
+     * @param Person $person
+     * @return void
+     */
+    public function registerPersonAddressAction(Person $person) : void
+    {
         $this->personRepository->add($person);
 
         $persistenceManager = $this->objectManager->get("TYPO3\\CMS\\Extbase\\Persistence\\Generic\\PersistenceManager");
@@ -278,10 +289,10 @@ class StoreInventoryController extends ActionController implements LoggerAwareIn
     }
 
     /**
-     * @param \MyVendor\Deliverrando\Domain\Model\Person $loggedInPerson
+     * @param Person $loggedInPerson
      * @return \MyVendor\Deliverrando\Domain\Model\Order
      */
-    private function setupOrderFromPostArguments(\MyVendor\Deliverrando\Domain\Model\Person $loggedInPerson) : \MyVendor\Deliverrando\Domain\Model\Order
+    private function setupOrderFromPostArguments(Person $loggedInPerson) : \MyVendor\Deliverrando\Domain\Model\Order
     {
         $order = new \MyVendor\Deliverrando\Domain\Model\Order($loggedInPerson);
 
@@ -306,13 +317,13 @@ class StoreInventoryController extends ActionController implements LoggerAwareIn
     }
 
     /**
-     * @param \MyVendor\Deliverrando\Domain\Model\Person $loggedInPerson
+     * @param Person $loggedInPerson
      * @param int $deliveryTime
      * @param string $productNameList
      * @return void
      */
-    private function sendEmail(\MyVendor\Deliverrando\Domain\Model\Person $loggedInPerson, int $deliveryTime,
-        string $productNameList) : void
+    private function sendEmail(Person $loggedInPerson, int $deliveryTime,
+                               string $productNameList) : void
     {
         $email = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(\TYPO3\CMS\Core\Mail\MailMessage::class);
         $email->setCharset('UTF-8');

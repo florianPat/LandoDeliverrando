@@ -18,7 +18,7 @@
             </f:if>
         </div>
 
-        <div class="row" style="background-color: white; padding: 1vw;">
+        <div class="row" class="foodTableDiv">
             <f:if condition="{opened}">
                 <f:then>
                     <div class="columns-10">
@@ -80,7 +80,7 @@
             </f:if>
         </div>
 
-        <div style="display: none">
+        <div class="invisible">
             <f:form.validationResults>
                 <!-- does the array "errors" contain a value? -->
                 <f:if condition="{validationResults.flattenedErrors}">
@@ -93,7 +93,7 @@
             </f:form.validationResults>
         </div>
 
-        <div style="background-color: ghostwhite; padding: 1vw;">
+        <div class="addProductDiv">
             <!-- where your own viewhelpers are defined -->
             {namespace myVH=MyVendor\Deliverrando\ViewHelper}
 
@@ -142,12 +142,12 @@
 
         <br>
 
-        <div style="background-color: whitesmoke; padding: 1vw;">
+        <div class="loginSectionDiv">
         <f:security.ifAuthenticated>
             <f:then>
                 <f:cObject typoscriptObjectPath="lib.login" />
 
-                <f:link.action action="index" id="redirectLinkThing" style="display: none"></f:link.action>
+                <f:link.action action="index" id="redirectLinkThing" class="invisible"></f:link.action>
             </f:then>
             <f:else>
                 <f:if condition="{personLoggedIn}">
@@ -166,10 +166,9 @@
 
                             <f:form.submit value="logIn" />
                         </f:form>
-                        <f:form name="person" controller="StoreInventory" action="register" style="display: none" id="personRegisterForm">
+                        <f:form name="person" controller="StoreInventory" action="register" style="display: none;" id="personRegisterForm">
                             <myVH:formFieldHelp tag='<f:form.textfield property="name" required="true" />' idPrefix="registerAction" />
                             <myVH:formFieldHelp tag='<f:form.password property="password" />' idPrefix="registerAction" />
-                            <myVH:formFieldHelp tag='<f:form.textfield property="address" required="true" />' idPrefix="registerAction" />
                             <myVH:formFieldHelp tag='<f:form.textfield property="telephonenumber" />' idPrefix="registerAction" />
                             <myVH:formFieldHelp tag='<f:form.textfield property="email" />' idPrefix="registerAction" />
 

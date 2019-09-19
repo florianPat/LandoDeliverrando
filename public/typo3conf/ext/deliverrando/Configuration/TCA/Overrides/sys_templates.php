@@ -14,12 +14,6 @@ defined('TYPO3_MODE') || die();
 
 \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addStaticFile(
     'deliverrando',
-    'Configuration/TypoScript/WithoutSchnickSchnack',
-    'WithoutSchnickSchnack'
-);
-
-\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addStaticFile(
-    'deliverrando',
     'Configuration/TypoScript/Json',
     'Json'
 );

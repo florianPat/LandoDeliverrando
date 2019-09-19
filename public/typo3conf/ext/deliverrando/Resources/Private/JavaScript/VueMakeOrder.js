@@ -220,9 +220,9 @@
                 linkGetProgressAction: String,
             },
             template: `
-                <div style="width: 100%; background-color: grey;">
-                    <p style="color: whitesmoke; float: right; font-size: 20px; vertical-align: middle; margin-right: 5px;">{{ progress }}</p>
-                    <p style="color: whitesmoke; float: left; font-size: 20px; vertical-align: middle; margin-left: 5px;">{{ percent }}%</p>
+                <div class="makeOrder">
+                    <p class="makeOrderLeftText">{{ progress }}</p>
+                    <p class="makeOrderRightText">{{ percent }}%</p>
                     <div :style="[style, { width: this.percent + '%' } ]"></div>
                 </div>
             `
