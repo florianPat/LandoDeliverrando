@@ -68,16 +68,11 @@ _processed_
 #######
 # Dev #
 #######
-/docker-compose.override.yml
-!/files/typo3.sql.gz
-/config/pathconfig
-/.env
+!/files/lamp.sql.gz
 
 #####################
 # Global exceptions #
 #####################
-
 !.index.html
 !.gitkeep
-
 /node_modules/
