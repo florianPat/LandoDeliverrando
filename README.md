@@ -2,11 +2,10 @@
 <ul>
 <li>git clone git@github.com:florianPat/LandoDeliverrando.git</li>
 <li>cd LandoDeliverrando</li>
-<li>lando start</li>
-<li>lando db-import files/lamp.sql.gz</li>
-<li>lando composer typo3:kickstart</li>
-<li>npm install (if one wants to modify js through gulp-builds!)</li>
+<li>./firstStart.sh</li>
 <li>finished!</li>
+<li>npm install (if one wants to modify js. Just run gulp in the EXT-dir)</li>
+<li>open <a href="http://deliverrando.lndo.site">http://deliverrando.lndo.site</a></li>
 </ul>
 
 <h3>TYPO3 credentials:</h3>
