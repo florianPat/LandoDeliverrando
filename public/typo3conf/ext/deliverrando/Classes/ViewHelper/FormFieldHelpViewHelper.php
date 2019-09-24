@@ -12,8 +12,11 @@ class FormFieldHelpViewHelper extends AbstractTagBasedViewHelper
      */
     public function initializeArguments() : void
     {
+        parent::initializeArguments();
+
         $this->registerArgument("tag", "string", "The tag to add to the form", true);
         $this->registerArgument("idPrefix", "string", "The string to add to the id of the tag and the p tag", true);
+        $this->registerArgument("placeholder", "string", "An optional placeholder", false);
     }
 
     /**
@@ -60,7 +63,11 @@ class FormFieldHelpViewHelper extends AbstractTagBasedViewHelper
         assert($propertyNameEndPos < strlen($result));
         $propertyName = substr($result, $propertyNameStartPos, $propertyNameEndPos - $propertyNameStartPos);
 
-        $placeholderName = ucfirst($propertyName);
+        if(isset($this->arguments['placeholder'])) {
+            $placeholderName = $this->arguments['placeholder'];
+        } else {
+            $placeholderName = ucfirst($propertyName);
+        }
 
         $idPrefix = 'formErr_' . $this->arguments['idPrefix'] . '_';
         $id = $idPrefix . $className . '.' . $propertyName;

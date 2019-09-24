@@ -1,6 +1,26 @@
 <div id="vueResidence" class="col-10">
-    <f:form name="person" controller="StoreInventory" action="registerPersonAddress">
-        <autocomplete-box></autocomplete-box>
-        <f:form.submit id="registerPersonSubmit" disabled="true" value="Set" class="registerPersonAddressSubmit"/>
-    </f:form>
+    <div class="row">
+        <f:form controller="StoreInventory" action="registerPersonAddress" style="width: 100%" object="{person}" name="person">
+            <f:form.hidden property="name" />
+            <f:form.hidden property="password" />
+            <f:form.hidden property="telephonenumber" />
+            <f:form.hidden property="email" />
+            <autocomplete-box post-code="{postCode}"></autocomplete-box>
+            <f:form.submit id="registerPersonSubmit" disabled="disabled" value="Set" class="registerPersonAddressSubmit"/>
+        </f:form>
+    </div>
+
+    <f:comment>
+        <f:section name="formError">
+            <f:if condition="{validationResults.flattenedErrors}">
+                <f:form.validationResults for="{property}">
+                    <f:for each="{validationResults.flattenedErrors}" as="errors" key="propertyPath">
+                        <f:for each="{errors}" as="error">
+                            <p style="background-color: red;">{error.message}</p>
+                        </f:for>
+                    </f:for>
+                </f:form.validationResults>
+            </f:if>
+        </f:section>
+    </f:comment>
 </div>

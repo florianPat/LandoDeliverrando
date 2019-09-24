@@ -53,7 +53,7 @@
                         let xhttp = new XMLHttpRequest();
 
                         xhttp.onreadystatechange = () => {
-                            if(this.xhttp.readyState == 4 && this.xhttp.status == 200) {
+                            if(this.xhttp.readyState === 4 && this.xhttp.status === 200) {
                                 this.triggerAjax();
                             }
                         };
@@ -79,9 +79,9 @@
 
                 this.xhttp.onreadystatechange = () =>
                 {
-                    if(this.xhttp.readyState == 4 && this.xhttp.status == 200) {
+                    if(this.xhttp.readyState === 4 && this.xhttp.status === 200) {
                         vue.$emit('ajaxResponse', JSON.parse(this.xhttp.responseText));
-                    } else if(this.xhttp.readyState == 4 && this.xhttp.status >= 400) {
+                    } else if(this.xhttp.readyState === 4 && this.xhttp.status >= 400) {
                         console.assert(!"InvalidCodePath", "InvalidCodePath");
                     }
                 };

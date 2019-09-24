@@ -19,9 +19,9 @@
 
             xhttp.onreadystatechange = function()
             {
-                if(this.readyState == 4 && this.status == 200) {
+                if(this.readyState === 4 && this.status === 200) {
                     vue.$emit(responseEventName, JSON.parse(this.responseText));
-                } else if(this.readyState == 4 && this.status >= 400) {
+                } else if(this.readyState === 4 && this.status >= 400) {
                     console.assert(true, 'server error!');
                 }
             };

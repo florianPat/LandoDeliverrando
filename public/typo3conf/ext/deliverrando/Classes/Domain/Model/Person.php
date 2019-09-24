@@ -40,7 +40,7 @@ class Person extends AbstractEntity
      * @param string $telephonenumber
      * @param string $email
      */
-    public function __construct($name, $password, $address = '', $telephonenumber = '', $email = '')
+    public function __construct($name = '', $password = '', $address = '', $telephonenumber = '', $email = '')
     {
         $this->name = $name;
         $this->password = $password;

@@ -243,17 +243,25 @@ class StoreInventoryController extends ActionController implements LoggerAwareIn
     }
 
     /**
-     * @param Person $registerPerson
+     * @param Person $person
      * @\TYPO3\CMS\Extbase\Annotation\Validate("\MyVendor\Deliverrando\Domain\Validator\PersonValidNameValidator", param="person")
      * @return void
      */
     public function registerAction(Person $person) : void
     {
-        $passwordHash = GeneralUtility::makeInstance(PasswordHashFactory::class)->getDefaultHashInstance('FE');
-
-        $person->setPassword($passwordHash->getHashedPassword($person->getPassword()));
-
         $this->view->assign('person', $person);
+        $this->view->assign('postCode', $person->getAddress());
+    }
+
+    /**
+     * @return void
+     */
+    public function initializeRegisterPersonAddressAction() : void
+    {
+        $propertyMapperConfiguration = $this->arguments['person']->getPropertyMappingConfiguration();
+        $propertyMapperConfiguration->allowAllProperties();
+        $propertyMapperConfiguration->setTypeConverterOption('TYPO3\CMS\Extbase\Property\TypeConverter\PersistentObjectConverter',
+            \TYPO3\CMS\Extbase\Property\TypeConverter\PersistentObjectConverter::CONFIGURATION_CREATION_ALLOWED, true);
     }
 
     /**
@@ -262,10 +270,13 @@ class StoreInventoryController extends ActionController implements LoggerAwareIn
      */
     public function registerPersonAddressAction(Person $person) : void
     {
+        $passwordHash = GeneralUtility::makeInstance(PasswordHashFactory::class)->getDefaultHashInstance('FE');
+
+        $person->setPassword($passwordHash->getHashedPassword($person->getPassword()));
+
         $this->personRepository->add($person);
 
-        $persistenceManager = $this->objectManager->get("TYPO3\\CMS\\Extbase\\Persistence\\Generic\\PersistenceManager");
-        $persistenceManager->persistAll();
+        $this->persistAll();
 
         $GLOBALS['TSFE']->fe_user->setKey('ses','uid', $person->getUid());
 

@@ -29,8 +29,9 @@
 		"typo3/cms-tstemplate": "^9.5",
 		"typo3/cms-viewpage": "^9.5",
 		"phpunit/phpunit": "^8.3",
-		"jigal/t3adminer": "^9.3"
-	},
+		"jigal/t3adminer": "^9.3",
+      	"ext-json": "*"
+    },
 	"autoload": {
         "psr-4": {
             "MyVendor\\Deliverrando\\": "public/typo3conf/ext/deliverrando/Classes/"

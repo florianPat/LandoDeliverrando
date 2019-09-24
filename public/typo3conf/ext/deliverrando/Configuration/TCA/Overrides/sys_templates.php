@@ -1,6 +1,12 @@
 <?php
 
+use TYPO3\CMS\Core\Database\ConnectionPool;
+use TYPO3\CMS\Core\Database\Query\Restriction\DeletedRestriction;
+use TYPO3\CMS\Core\Database\Query\Restriction\HiddenRestriction;
 use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Extbase\Configuration\BackendConfigurationManager;
+use TYPO3\CMS\Extbase\Object\ObjectManager;
 
 defined('TYPO3_MODE') || die();
 
@@ -20,7 +26,6 @@ defined('TYPO3_MODE') || die();
 
 //NOTE: Adds a "select plugin dialog" in the select template dialog
 $sysTemplateRepository = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(\MyVendor\Deliverrando\Domain\Repository\SysTemplatesRepository::class);
-//TODO: get currently selected page in backend!
 $staticTemplate = $sysTemplateRepository->findIncludeStaticFileByPageUid(7);
 $findResult = strpos($staticTemplate, 'EXT:deliverrando/Configuration/TypoScript/Json');
 if($findResult !== false) {

@@ -113,31 +113,6 @@
                     <f:form.submit value="Add"/>
                 </f:form>
             </f:security.ifAuthenticated>
-
-            <!-- So kann man die Errors viel einfacher einbauen -->
-            <f:comment>
-                <f:form.textfield property="name" required="true" />
-                <f:render section="formError" arguments="{property: 'name'}" />
-                <f:form.textarea property="description" required="true" />
-                <f:render section="formError" arguments="{property: 'description'}" />
-                <f:form.textfield property="quantity" type="number" required="true" />
-                <f:render section="formError" arguments="{property: 'quantity'}" />
-
-                <f:section name="formError">
-                    <f:form.validationResults for="product.{property}">
-                        <!-- does the array "errors" contain a value? -->
-                        <f:if condition="{validationResults.flattenedErrors}">
-                            <!-- get the "error" array. The key is the property path and the value is an array of errors. -->
-                            <f:for each="{validationResults.flattenedErrors}" as="errors" key="propertyPath">
-                                <ul class="formValidationErrorResult">{propertyPath}<f:for each="{errors}" as="error"><li>{error.message}
-                                    <f:translate key="error.product.{property}.{error.code}" /> 'error.product.{property}.{error.code}'
-                                </li></f:for></ul>
-                            </f:for>
-                            <p id="lastAction">{lastAction}</p>
-                        </f:if>
-                    </f:form.validationResults>
-                </f:section>
-            </f:comment>
         </div>
 
         <br>
@@ -169,8 +144,9 @@
                         <f:form name="person" controller="StoreInventory" action="register" style="display: none;" id="personRegisterForm">
                             <myVH:formFieldHelp tag='<f:form.textfield property="name" required="true" />' idPrefix="registerAction" />
                             <myVH:formFieldHelp tag='<f:form.password property="password" />' idPrefix="registerAction" />
-                            <myVH:formFieldHelp tag='<f:form.textfield property="telephonenumber" />' idPrefix="registerAction" />
-                            <myVH:formFieldHelp tag='<f:form.textfield property="email" />' idPrefix="registerAction" />
+                            <myVH:formFieldHelp tag='<f:form.textfield property="telephonenumber" type="number" required="true" />' idPrefix="registerAction" />
+                            <myVH:formFieldHelp tag='<f:form.textfield property="email" required="true" />' idPrefix="registerAction" />
+                            <myVH:formFieldHelp tag='<f:form.textfield property="address" placeholder="post code" required="true" />' idPrefix="registerAction" />
 
                             <f:form.submit value="register" />
                         </f:form>
