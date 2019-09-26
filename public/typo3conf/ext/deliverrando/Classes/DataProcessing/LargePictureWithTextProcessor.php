@@ -2,8 +2,11 @@
 
 namespace MyVendor\Deliverrando\DataProcessing;
 
+use MyVendor\Deliverrando\Domain\Repository\SysTemplatesRepository;
+use TYPO3\CMS\Core\Resource\FileRepository;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Object\ObjectManager;
+use TYPO3\CMS\Extbase\Service\ImageService;
 use TYPO3\CMS\Frontend\ContentObject\ContentObjectRenderer;
 use TYPO3\CMS\Frontend\ContentObject\DataProcessorInterface;
 
@@ -18,15 +21,12 @@ class LargePictureWithTextProcessor implements DataProcessorInterface
      */
     public function process(ContentObjectRenderer $cObj, array $contentObjectConfiguration, array $processorConfiguration, array $processedData)
     {
-        $fileRepository = GeneralUtility::makeInstance(\TYPO3\CMS\Core\Resource\FileRepository::class);
-        $object = $fileRepository->findByRelation('tt_content', 'image', 1);
-        $url = $object[0]->getPublicUrl();
+        $objectManager = GeneralUtility::makeInstance(ObjectManager::class);
 
-        $objectManager = GeneralUtility::makeInstance(\TYPO3\CMS\Extbase\Object\ObjectManager::class);
-        $sysTemplateRepository = $objectManager->get(\MyVendor\Deliverrando\Domain\Repository\SysTemplatesRepository::class);
-        $header = $sysTemplateRepository->findHeaderForLargePictureWithText(1);
+        $images = $objectManager->get(FileRepository::class)->findByRelation('tt_content', 'image', $cObj->data['uid']);
+        $header = $objectManager->get(SysTemplatesRepository::class)->findHeaderForLargePictureWithText($cObj->data['pid']);
 
-        $processedData['backgroundImgUrl'] = '../../../../../../../' . $url;
+        $processedData['backgroundImgUrl'] = $objectManager->get(ImageService::class)->getImageUri($images[0]);
         $processedData['header'] = $header;
 
         return $processedData;

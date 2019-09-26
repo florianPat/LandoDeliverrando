@@ -3,8 +3,10 @@
 namespace MyVendor\Deliverrando\Domain\Validator;
 
 use TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3\CMS\Extbase\Object\ObjectManager;
+use TYPO3\CMS\Extbase\Configuration\ConfigurationManagerInterface;
 use \TYPO3\CMS\Extbase\Validation\Validator\AbstractValidator;
+use TYPO3\CMS\Extbase\Validation\Validator\NumberValidator;
+use TYPO3\CMS\Extbase\Validation\Validator\StringLengthValidator;
 
 class PersonValidNameValidator extends AbstractValidator
 {
@@ -15,27 +17,33 @@ class PersonValidNameValidator extends AbstractValidator
     private $personRepository;
 
     /**
+     * @var ConfigurationManagerInterface
+     */
+    protected $configurationManager;
+
+    public function injectConfigurationManager(ConfigurationManagerInterface $configurationManager)
+    {
+        $this->configurationManager = $configurationManager;
+    }
+
+    /**
      * @param mixed $value
      * @return void
      */
-    protected function isValid($value) : void
+    protected function isValid($value): void
     {
-        if($this->personRepository->findByName($value->getName()) !== null) {
+        if ($this->personRepository->findByName($value->getName()) !== null) {
             $this->addError("person.name:The name is already registered!", 2839283);
         }
 
+        $apiKey = $this->configurationManager
+            ->getConfiguration(ConfigurationManagerInterface::CONFIGURATION_TYPE_SETTINGS, 'deliverrando')['bingApiKey'];
+
         $postcode = $value->getAddress();
 
-        $errorResult = GeneralUtility::makeInstance(\TYPO3\CMS\Extbase\Validation\Validator\NumberValidator::class)->validate($postcode);
-        $errorResult->merge(GeneralUtility::makeInstance(\TYPO3\CMS\Extbase\Validation\Validator\StringLengthValidator::class,
+        $this->result = GeneralUtility::makeInstance(NumberValidator::class)->validate($postcode);
+        $this->result->merge(GeneralUtility::makeInstance(StringLengthValidator::class,
             ['minimum' => 5, 'maximum' => 5])->validate($postcode));
-        $errorResult->merge(GeneralUtility::makeInstance(\MyVendor\Deliverrando\Domain\Validator\PostCodeValidator::class)->validate($postcode));
-
-        if($errorResult->hasErrors()) {
-            foreach($errorResult->getErrors() as $error) {
-                $this->addError("person.address:" . $error->getMessage(), $error->getCode());
-            }
-            return;
-        }
+        $this->result->merge(GeneralUtility::makeInstance(PostCodeValidator::class, ['apiKey' => $apiKey])->validate($postcode));
     }
 }

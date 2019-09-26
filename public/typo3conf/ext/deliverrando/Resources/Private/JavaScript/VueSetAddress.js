@@ -23,7 +23,8 @@
             },
             props: {
                 postCode: String,
-                inputNameAttr: String
+                inputNameAttr: String,
+                apiKey: String,
             },
             computed: {
                 autosuggestValues() {
@@ -56,7 +57,7 @@
                 populateAutocompleteList() {
                     let url = 'http://dev.virtualearth.net/REST/v1/Locations/DE/' + this.autosuggestValues.postCode +
                         '/' + encodeURI(this.autosuggestValues.locality) + '/' + encodeURI(this.textfieldValue) +
-                        '?key=YOUR_BING_API_KEY';
+                        '?key=' + this.apiKey;
                     this.xhttp.open('GET', url, true);
                     this.xhttp.send();
                 },

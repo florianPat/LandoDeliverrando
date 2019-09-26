@@ -9,6 +9,12 @@
 //NOTE: Set the "where is the data page" for the fronted login extension
 plugin.tx_felogin_pi1.storagePid = 9
 
+plugin.tx_deliverrando {
+	settings {
+		bingApiKey = {$bingApiKey}
+	}
+}
+
 page = PAGE
 page {
     // This decodes the "format" of the page (html in this case?)

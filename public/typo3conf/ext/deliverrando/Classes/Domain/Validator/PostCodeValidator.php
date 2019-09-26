@@ -6,6 +6,10 @@ use TYPO3\CMS\Extbase\Validation\Validator\AbstractValidator;
 
 class PostCodeValidator extends AbstractValidator
 {
+    protected $supportedOptions = [
+      'apiKey' => [null, 'Bing API Key', 'string', true],
+    ];
+
     /**
      * @param mixed $value
      * @return void
@@ -13,7 +17,7 @@ class PostCodeValidator extends AbstractValidator
     protected function isValid($value) : void
     {
         $response = file_get_contents('http://dev.virtualearth.net/REST/v1/Locations?countryRegion=DE&postalCode=' . $value .
-            '&key=YOUR_BING_API_KEY');
+            '&key=', $this->options['apiKey']);
         $json = json_decode($response);
         assert($json->statusCode == 200);
 

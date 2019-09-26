@@ -397,7 +397,7 @@ class StoreInventoryController extends ActionController implements LoggerAwareIn
         $deliverrandoAddress = $productDescs[0]->getProduct()->getDelieverrando()->getAddress();
         $personAddress = $loggedInPerson->getAddress();
         $response = file_get_contents('http://dev.virtualearth.net/REST/v1/Routes?wayPoint.1='. $deliverrandoAddress .
-            '&wayPoint.2=' . $personAddress . '&optimizeWaypoints=true&routeAttributes=all&key=YOUR_BING_API_KEY');
+            '&wayPoint.2=' . $personAddress . '&optimizeWaypoints=true&routeAttributes=all&key=' . $this->settings['bingApiKey']);
         $json = json_decode($response);
         assert($json->statusCode == 200);
         assert($json->resourceSets[0]->estimatedTotal === 1);
