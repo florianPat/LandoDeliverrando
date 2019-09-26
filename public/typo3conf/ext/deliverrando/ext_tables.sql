@@ -27,7 +27,8 @@ CREATE TABLE tx_deliverrando_domain_model_delieverrando(
     --NOTE: products objectStorage-member (its a counter in the db)
     products int(11) unsigned DEFAULT 0 NOT NULL,
     --NOTE: uid of the fe-userGroup (FrontentUserGroup-Object in the domain model)
-    userGroup int(11) unsigned NOT NULL,
+    user_group int(11) unsigned NOT NULL,
+    address varchar(255) DEFAULT '' NOT NULL,
 
     crdate int(11) DEFAULT 0 NOT NULL,
     tstamp int(11) unsigned DEFAULT 0 NOT NULL,

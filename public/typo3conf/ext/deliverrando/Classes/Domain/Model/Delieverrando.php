@@ -13,10 +13,10 @@ class Delieverrando extends AbstractEntity
 
     /**
      * @var \TYPO3\CMS\Extbase\Persistence\ObjectStorage<\MyVendor\Deliverrando\Domain\Model\Product>
-     * This tells extbase to only load the objects if they are needed, and not to load all child objects wich are associated with Delieverrando
+     * This tells extbase to only load the objects if they are needed, and not to load all child objects which are associated with Deliverrando
      * (that would be called Eager-Loading)
      * @TYPO3\CMS\Extbase\Annotation\ORM\Lazy
-     * This tells extbase to delete the products if the Delieverrando gets deleted
+     * This tells extbase to delete the products if the Deliverrando gets deleted
      * @TYPO3\CMS\Extbase\Annotation\ORM\Cascade("remove")
      */
     protected $products;
@@ -27,14 +27,20 @@ class Delieverrando extends AbstractEntity
     protected $userGroup;
 
     /**
+     * @var string $address
+     */
+    protected $address;
+
+    /**
      * @param string $name
      * @param \TYPO3\CMS\Extbase\Domain\Model\FrontendUserGroup $userGroup
      */
-    public function __construct($name = '', \TYPO3\CMS\Extbase\Domain\Model\FrontendUserGroup $userGroup = null)
+    public function __construct(string $name, \TYPO3\CMS\Extbase\Domain\Model\FrontendUserGroup $userGroup)
     {
         $this->name = $name;
         $this->products = new \TYPO3\CMS\Extbase\Persistence\ObjectStorage();
         $this->userGroup = $userGroup;
+        $this->address = '';
     }
 
     /**
@@ -79,6 +85,23 @@ class Delieverrando extends AbstractEntity
     public function setProducts(\TYPO3\CMS\Extbase\Persistence\ObjectStorage $products) : void
     {
         $this->products = $products;
+    }
+
+    /**
+     * @param string $address
+     * @return void
+     */
+    public function setAddress(string $address) : void
+    {
+        $this->address = $address;
+    }
+
+    /**
+     * @return string
+     */
+    public function getAddress() : string
+    {
+        return $this->address;
     }
 
     /**

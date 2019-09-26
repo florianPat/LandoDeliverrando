@@ -26,27 +26,16 @@ class PersonValidNameValidator extends AbstractValidator
 
         $postcode = $value->getAddress();
 
-        $errorResult =  GeneralUtility::makeInstance(\TYPO3\CMS\Extbase\Validation\Validator\NumberValidator::class)->validate($postcode);
+        $errorResult = GeneralUtility::makeInstance(\TYPO3\CMS\Extbase\Validation\Validator\NumberValidator::class)->validate($postcode);
         $errorResult->merge(GeneralUtility::makeInstance(\TYPO3\CMS\Extbase\Validation\Validator\StringLengthValidator::class,
             ['minimum' => 5, 'maximum' => 5])->validate($postcode));
+        $errorResult->merge(GeneralUtility::makeInstance(\MyVendor\Deliverrando\Domain\Validator\PostCodeValidator::class)->validate($postcode));
+
         if($errorResult->hasErrors()) {
             foreach($errorResult->getErrors() as $error) {
                 $this->addError("person.address:" . $error->getMessage(), $error->getCode());
             }
             return;
-        }
-
-        $response = file_get_contents('http://dev.virtualearth.net/REST/v1/Locations?countryRegion=DE&postalCode=' . $postcode .
-            '&key=YOUR_BING_API_KEY');
-        $json = json_decode($response);
-        assert($json->statusCode == 200);
-
-        $ressourceSetLength = $json->resourceSets[0]->estimatedTotal;
-
-        if($ressourceSetLength === 0 || (!isset($json->resourceSets[0]->resources[0]->address->postalCode)) || $json->resourceSets[0]->resources[0]->address->postalCode !== $postcode) {
-            $this->addError("person.address:This is not a valid post code!", 23823892894839);
-        } else {
-            $value->setAddress($value->getAddress() . ';' . $json->resourceSets[0]->resources[0]->address->locality);
         }
     }
 }

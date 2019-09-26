@@ -22,7 +22,8 @@
                 };
             },
             props: {
-                postCode: String
+                postCode: String,
+                inputNameAttr: String
             },
             computed: {
                 autosuggestValues() {
@@ -120,8 +121,8 @@
             },
             template: `
                 <div class="registerPersonAddressInput">
-                    <!-- TODO: NOTE: This is the compilded fluid version. Not really cool, but I messed around with the "normal" html and js objects and events, and I do not get that to work.-->
-                    <input hidden="hidden" v-model="coordinates" type="text" required="required" name="tx_deliverrando_productlist[person][address]">
+                    <!-- TODO: TODO: This is the compilded fluid version. Not really cool, but I messed around with the "normal" html and js objects and events, and I do not get that to work.-->
+                    <input hidden="hidden" v-model="coordinates" type="text" required="required" :name="inputNameAttr">
                     <input @input="inputEvent();" v-model="textfieldValue" autofocus="autofocus" placeholder="Address" type="text">
                     <p v-show="errorMessage" style="background-color: red;">{{ errorMessage }}</p>
     

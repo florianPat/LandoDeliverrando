@@ -11,10 +11,10 @@ defined('TYPO3_MODE') || die('Access denied.');
   'MyVendor.Deliverrando',
   'Productlist',
   [
-      'StoreInventory' => 'index, add, remove, show, update, login, register, logout, endOrder, progressUpdate, registerPersonAddress',
+      'StoreInventory' => 'index, add, remove, show, update, login, register, logout, endOrder, progressUpdate, registerPersonAddress, postRegisterDeliverrando',
   ],
   [
-      'StoreInventory' => 'index, add, remove, show, update, login, register, logout, endOrder, progressUpdate, registerPersonAddress',
+      'StoreInventory' => 'index, add, remove, show, update, login, register, logout, endOrder, progressUpdate, registerPersonAddress, postRegisterDeliverrando',
   ]
 );
 

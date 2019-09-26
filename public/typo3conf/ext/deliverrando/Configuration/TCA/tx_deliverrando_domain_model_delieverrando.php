@@ -26,7 +26,7 @@ return [
                 'foreign_field' => 'delieverrando',
             ],
         ],
-        'userGroup' => [
+        'user_group' => [
             'label' => 'UserGroup',
             'config' => [
                 'type' => 'select',
@@ -34,8 +34,15 @@ return [
                 'foreign_table' => 'fe_groups',
             ],
         ],
+        'address' => [
+            'label' => 'Address',
+            'config' => [
+                'type' => 'input',
+                'size' => 20,
+            ],
+        ],
     ],
     'types' => [
-        '0' => ['showitem' => 'name, products, userGroup'],
+        '0' => ['showitem' => 'name, products, user_group, address'],
     ],
 ];

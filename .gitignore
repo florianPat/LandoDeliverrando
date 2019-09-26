@@ -37,7 +37,6 @@ vendor
 !/public/typo3conf/ext/deliverrando
 /public/typo3conf/ext/deliverrando/Resources/Public/*
 !/public/typo3conf/ext/deliverrando/Resources/Public/Images
-!/public/typo3conf/ext/deliverrando/Resources/Public/Css
 
 ##############
 # Temp files #

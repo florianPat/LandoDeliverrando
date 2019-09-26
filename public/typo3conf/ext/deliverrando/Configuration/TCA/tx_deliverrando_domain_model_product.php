@@ -63,6 +63,14 @@ return [
             'MM' => 'tx_deliverrando_product_category_mm',
         ],
     ],
+    'delieverrando' => [
+        'label' => 'Delieverrando',
+        'config' => [
+            'type' => 'select',
+            'renderType' => 'selectSingle',
+            'foreign_table' => 'tx_deliverrando_domain_model_delieverrando',
+        ],
+    ],
   ],
   'types' => [
     '0' => ['showitem' => 'name, description, quantity, deliverytime, categories'],

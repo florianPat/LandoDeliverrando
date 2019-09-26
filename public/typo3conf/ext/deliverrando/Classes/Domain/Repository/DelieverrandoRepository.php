@@ -14,13 +14,13 @@ class DelieverrandoRepository extends Repository
      */
     public function findDelieverRandoUid(int $userGroupUid) : string
     {
-        //NOTE: It would be easier if I just use this function. But I can not do it, because the table column has to be named in snake_case
+        //NOTE: I do not know why I do not use this!
         //return $this->findOneByUserGroup($userGroupUid)->getUid();
 
         $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable('tx_deliverrando_domain_model_delieverrando');
 
         $statement = $queryBuilder->select('uid')->from('tx_deliverrando_domain_model_delieverrando')->where(
-            $queryBuilder->expr()->eq('userGroup', $queryBuilder->createNamedParameter($userGroupUid))
+            $queryBuilder->expr()->eq('user_group', $queryBuilder->createNamedParameter($userGroupUid))
         )->execute();
 
         return $statement->fetch()['uid'];
@@ -45,21 +45,6 @@ class DelieverrandoRepository extends Repository
         }  else {
             return -1;
         }
-    }
-
-    /**
-     * @param int $uid
-     * @return string
-     */
-    public function findDelieverRandoName(int $uid) : string
-    {
-        $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable('tx_deliverrando_domain_model_delieverrando');
-
-        $statement = $queryBuilder->select('name')->from('tx_deliverrando_domain_model_delieverrando')->where(
-            $queryBuilder->expr()->eq('uid', $queryBuilder->createNamedParameter($uid))
-        )->execute();
-
-        return $statement->fetch()['name'];
     }
 
     /**

@@ -2,7 +2,9 @@
 
 namespace MyVendor\Deliverrando\Controller;
 
+use MyVendor\Deliverrando\Domain\Model\Delieverrando;
 use MyVendor\Deliverrando\Domain\Model\Person;
+use MyVendor\Deliverrando\Domain\Validator\PersonValidNameValidator;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use TYPO3\CMS\Core\Context\Context;
@@ -12,6 +14,7 @@ use TYPO3\CMS\Extbase\Mvc\Controller\ActionController;
 use TYPO3\CMS\Extbase\Mvc\Web\Routing\UriBuilder;
 use TYPO3\CMS\Extbase\Object\ObjectManager;
 use TYPO3\CMS\Extbase\Persistence\Generic\PersistenceManager;
+use TYPO3\CMS\Extbase\Validation\Validator\ConjunctionValidator;
 
 class StoreInventoryController extends ActionController implements LoggerAwareInterface
 {
@@ -121,6 +124,28 @@ class StoreInventoryController extends ActionController implements LoggerAwareIn
     }
 
     /**
+     * @param Delieverrando $deliverrando
+     * @param string $postCode
+     * @param string $address
+     * @\TYPO3\CMS\Extbase\Annotation\Validate("NumberValidator", param="postCode")
+     * @\TYPO3\CMS\Extbase\Annotation\Validate("StringLengthValidator", options={"minimum": 5, "maximum": 5}, param="postCode")
+     * @\TYPO3\CMS\Extbase\Annotation\Validate("\MyVendor\Deliverrando\Domain\Validator\PostCodeValidator", param="postCode")
+     * @return void
+     */
+    public function postRegisterDeliverrandoAction(Delieverrando $deliverrando, string $postCode = '', string $address = '') : void
+    {
+        $this->view->assign('deliverrando', $deliverrando);
+        if($postCode !== '') {
+            $this->view->assign('postCode', $postCode);
+        }
+        if($address !== '') {
+            $deliverrando->setAddress($address);
+            $this->delieverrandoRepository->update($deliverrando);
+            $this->redirect('index');
+        }
+    }
+
+    /**
      * @param string $messageText
      * @param \MyVendor\Deliverrando\Domain\Model\Product $product
      * @return void
@@ -135,9 +160,8 @@ class StoreInventoryController extends ActionController implements LoggerAwareIn
         } else {
             $this->view->assign('opened', true);
         }
-        if($GLOBALS['TSFE']->fe_user->getKey('ses', 'lastAction') !== null) {
-            $this->view->assign('lastAction', $GLOBALS['TSFE']->fe_user->getKey('ses', 'lastAction'));
-        }
+        assert($GLOBALS['TSFE']->fe_user->getKey('ses', 'lastAction') !== null);
+        $this->view->assign('lastAction', $GLOBALS['TSFE']->fe_user->getKey('ses', 'lastAction'));
 
         if($messageText !== '') {
             assert($product !== null);
@@ -153,10 +177,15 @@ class StoreInventoryController extends ActionController implements LoggerAwareIn
             $userGroupUid = $this->getUserGroupUidFromLoggedInUser();
 
             $delieverrandoUids = $this->delieverrandoRepository->findDelieverRandoUidsForUserGroup($userGroupUid);
-            $products = $this->productRepository->findAllWithDieverRandoUids($delieverrandoUids);
+            $deliverrando = $this->delieverrandoRepository->findByUid($delieverrandoUids[0]);
+            if($deliverrando->getAddress() !== '') {
+                $products = $this->productRepository->findAllWithDieverRandoUids($delieverrandoUids);
 
-            $this->view->assign('products', $products);
-            $this->view->assign('delieverrandoName', $this->delieverrandoRepository->findDelieverRandoName($delieverrandoUids[0]));
+                $this->view->assign('products', $products);
+                $this->view->assign('delieverrandoName', $deliverrando->getName());
+            } else {
+                $this->redirect('postRegisterDeliverrando', null, null, ['deliverrando' => $deliverrando]);
+            }
         } else {
             $this->view->assign('products', $this->productRepository->findAll());
         }
@@ -289,9 +318,11 @@ class StoreInventoryController extends ActionController implements LoggerAwareIn
     public function initializeAction() : void
     {
         $actionName = $this->resolveActionMethodName();
-        if($actionName !== 'indexAction') {
-            $GLOBALS['TSFE']->fe_user->setKey('ses', 'lastAction', $actionName);
-        }
+
+        $lastlastAction = $GLOBALS['TSFE']->fe_user->getKey('ses', 'lastlastAction');
+        $GLOBALS['TSFE']->fe_user->setKey('ses', 'lastAction', $lastlastAction ?? '');
+
+        $GLOBALS['TSFE']->fe_user->setKey('ses', 'lastlastAction', $actionName);
     }
 
     public function initializeEndOrderAction()
@@ -362,6 +393,16 @@ class StoreInventoryController extends ActionController implements LoggerAwareIn
         $productDescs = $order->getProductDescriptions();
         $productNameList = '<ul>';
         $quantitySum = 0;
+
+        $deliverrandoAddress = $productDescs[0]->getProduct()->getDelieverrando()->getAddress();
+        $personAddress = $loggedInPerson->getAddress();
+        $response = file_get_contents('http://dev.virtualearth.net/REST/v1/Routes?wayPoint.1='. $deliverrandoAddress .
+            '&wayPoint.2=' . $personAddress . '&optimizeWaypoints=true&routeAttributes=all&key=YOUR_BING_API_KEY');
+        $json = json_decode($response);
+        assert($json->statusCode == 200);
+        assert($json->resourceSets[0]->estimatedTotal === 1);
+        $order->setDeliverytime($order->getDeliverytime() + $json->resourceSets[0]->resources[0]->travelDuraction);
+
         foreach($productDescs as $productDesc) {
             $product = $productDesc->getProduct();
             $productNameList .= '<li>x' . $productDesc->getQuantity() . ' ' . $product->getName() . '</li>';

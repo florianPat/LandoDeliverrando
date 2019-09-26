@@ -1,0 +1,35 @@
+<div id="vueResidence" class="col-10">
+    <f:if condition="{postCode}">
+        <f:then>
+            <div class="row">
+                <f:form controller="StoreInventory" action="postRegisterDeliverrando" style="width: 100%" arguments="{deliverrando: deliverrando}">
+                    <autocomplete-box post-code="{postCode}" input-name-attr="tx_deliverrando_productlist[address]"></autocomplete-box>
+                    <f:form.submit id="registerPersonSubmit" disabled="disabled" value="Set" class="registerPersonAddressSubmit" />
+                </f:form>
+            </div>
+        </f:then>
+        <f:else>
+            <f:form controller="StoreInventory" action="postRegisterDeliverrando" style="width: 100%" arguments="{deliverrando: deliverrando}">
+                <div class="registerPersonAddressInput">
+                    <f:form.textfield name="postCode" required="true" placeholder="post code" />
+                    <f:render section="formError" arguments="{property: 'postCode'}" />
+                </div>
+                <f:form.submit id="registerPersonSubmit" value="Set" class="registerPersonAddressSubmit" style="background-color: #2196F3" />
+            </f:form>
+        </f:else>
+    </f:if>
+
+    <f:section name="formError">
+        <f:form.validationResults>
+            <f:if condition="{validationResults.flattenedErrors}">
+                <f:form.validationResults for="{property}">
+                    <f:for each="{validationResults.flattenedErrors}" as="errors" key="propertyPath">
+                        <f:for each="{errors}" as="error">
+                            <p style="background-color: red;">{error.message}</p>
+                        </f:for>
+                    </f:for>
+                </f:form.validationResults>
+            </f:if>
+        </f:form.validationResults>
+    </f:section>
+</div>
