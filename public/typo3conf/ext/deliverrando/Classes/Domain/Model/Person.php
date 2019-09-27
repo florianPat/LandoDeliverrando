@@ -2,6 +2,8 @@
 
 namespace MyVendor\Deliverrando\Domain\Model;
 
+use TYPO3\CMS\Core\Crypto\PasswordHashing\PasswordHashFactory;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\DomainObject\AbstractEntity;
 
 class Person extends AbstractEntity
@@ -129,5 +131,15 @@ class Person extends AbstractEntity
     public function getEmail()
     {
         return $this->email;
+    }
+
+    /**
+     * @return void
+     */
+    public function hashPassword() : void
+    {
+        $passwordHash = GeneralUtility::makeInstance(PasswordHashFactory::class)->getDefaultHashInstance('FE');
+
+        $this->password = $passwordHash->getHashedPassword($this->password);
     }
 }

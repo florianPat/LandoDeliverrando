@@ -2,6 +2,10 @@
 
 namespace MyVendor\Deliverrando\Domain\Repository;
 
+use MyVendor\Deliverrando\Domain\Model\Delieverrando;
+use TYPO3\CMS\Core\Context\Context;
+use TYPO3\CMS\Core\Context\Exception\AspectNotFoundException;
+use TYPO3\CMS\Extbase\Object\ObjectManager;
 use TYPO3\CMS\Extbase\Persistence\Repository;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use \TYPO3\CMS\Core\Database\ConnectionPool;
@@ -51,8 +55,10 @@ class DelieverrandoRepository extends Repository
      * @param int $userGroupUid
      * @return array
      */
-    public function findDelieverRandoUidsForUserGroup(int $userGroupUid) : array
+    public function findDelieverRandoUidsForUserGroup() : array
     {
+        $userGroupUid = $this->getUserGroupUidFromLoggedInUser();
+
         $delieverrandoSubGroupIds = [];
         $result = [$this->findDelieverRandoUid($userGroupUid)];
 
@@ -65,6 +71,36 @@ class DelieverrandoRepository extends Repository
             array_push($result, $this->findDelieverRandoUid($it));
         }
 
+        return $result;
+    }
+
+    /**
+     * @return int
+     */
+    private function getUserGroupUidFromLoggedInUser() : int
+    {
+        try {
+            $userGroupUids = GeneralUtility::makeInstance(ObjectManager::class)->get(Context::class)->getPropertyFromAspect('frontend.user', 'groupIds');
+        } catch (AspectNotFoundException $e) {
+            return 0;
+        }
+        assert($userGroupUids !== null);
+        //NOTE: TODO: This is kind of a hack
+        $result = $userGroupUids[count($userGroupUids) - 1];
+
+        return $result;
+    }
+
+    /**
+     * @return \MyVendor\Deliverrando\Domain\Model\Delieverrando
+     */
+    public function findByLoggedInFeUser() : Delieverrando
+    {
+        $userGroupUid = $this->getUserGroupUidFromLoggedInUser();
+        assert($userGroupUid !== null);
+        $delieverrandoUid = $this->findDelieverRandoUid($userGroupUid);
+        $result = $this->findByUid($delieverrandoUid);
+        assert($result !== null);
         return $result;
     }
 }

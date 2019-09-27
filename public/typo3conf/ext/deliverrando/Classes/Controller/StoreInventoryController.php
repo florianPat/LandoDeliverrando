@@ -3,6 +3,8 @@
 namespace MyVendor\Deliverrando\Controller;
 
 use MyVendor\Deliverrando\Controller\Helper\BingMapsRestApiHelper;
+use MyVendor\Deliverrando\Controller\Helper\CreateOrderHelper;
+use MyVendor\Deliverrando\Controller\Helper\CustomerSessionHelper;
 use MyVendor\Deliverrando\Domain\Model\Delieverrando;
 use MyVendor\Deliverrando\Domain\Model\Person;
 use MyVendor\Deliverrando\Domain\Model\Product;
@@ -10,22 +12,17 @@ use MyVendor\Deliverrando\Domain\Repository\CategoryRepository;
 use MyVendor\Deliverrando\Domain\Repository\OrderRepository;
 use MyVendor\Deliverrando\Domain\Repository\PersonRepository;
 use MyVendor\Deliverrando\Domain\Repository\ProductRepository;
-use Psr\Log\LoggerAwareInterface;
-use Psr\Log\LoggerAwareTrait;
 use TYPO3\CMS\Core\Context\Context;
 use TYPO3\CMS\Core\Context\Exception\AspectNotFoundException;
-use TYPO3\CMS\Core\Crypto\PasswordHashing\PasswordHashFactory;
-use TYPO3\CMS\Core\Mail\MailMessage;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Mvc\Controller\ActionController;
 use TYPO3\CMS\Extbase\Mvc\View\JsonView;
 use TYPO3\CMS\Extbase\Object\ObjectManager;
+use TYPO3\CMS\Extbase\Persistence\Exception\InvalidQueryException;
 use TYPO3\CMS\Extbase\Persistence\Generic\PersistenceManager;
 
-class StoreInventoryController extends ActionController implements LoggerAwareInterface
+class StoreInventoryController extends ActionController
 {
-    use LoggerAwareTrait;
-
     /**
     *  @var \MyVendor\Deliverrando\Domain\Repository\ProductRepository
     */
@@ -90,52 +87,6 @@ class StoreInventoryController extends ActionController implements LoggerAwareIn
     }
 
     /**
-     * @return int
-     */
-    private function getUserGroupUidFromLoggedInUser() : int
-    {
-        try {
-            $userGroupUids = GeneralUtility::makeInstance(ObjectManager::class)->get(Context::class)->getPropertyFromAspect('frontend.user', 'groupIds');
-        } catch (AspectNotFoundException $e) {
-            return 0;
-        }
-        assert($userGroupUids !== null);
-        //NOTE: TODO: This is kind of a hack
-        $result = $userGroupUids[count($userGroupUids) - 1];
-
-        return $result;
-    }
-
-    /**
-     * @return \MyVendor\Deliverrando\Domain\Model\Delieverrando
-     */
-    private function getDelieverRandoFromLoggedInUser() : Delieverrando
-    {
-        $userGroupUid = $this->getUserGroupUidFromLoggedInUser();
-        assert($userGroupUid !== null);
-        $delieverrandoUid = $this->delieverrandoRepository->findDelieverRandoUid($userGroupUid);
-        $result = $this->delieverrandoRepository->findByUid($delieverrandoUid);
-        assert($result !== null);
-        return $result;
-    }
-
-    /**
-     * @return void
-     */
-    private function addCategoryFromOption() : void
-    {
-        $allCategories = $this->categoryRepository->findAll();
-        $categoryOptions = [0 => ''];
-        $allCategories->rewind();
-
-        foreach($allCategories as $it) {
-            $categoryOptions[$it->getUid()] = $it->getName();
-        }
-
-        $this->view->assign('categoryOptions', $categoryOptions);
-    }
-
-    /**
      * @param string $isoDatetime
      * @return bool
      */
@@ -155,6 +106,19 @@ class StoreInventoryController extends ActionController implements LoggerAwareIn
     private function persistAll() : void
     {
         $this->objectManager->get(PersistenceManager::class)->persistAll();
+    }
+
+    /**
+     * @return void
+     */
+    public function initializeAction() : void
+    {
+        $actionName = $this->resolveActionMethodName();
+
+        $lastlastAction = $GLOBALS['TSFE']->fe_user->getKey('ses', 'lastlastAction');
+        $GLOBALS['TSFE']->fe_user->setKey('ses', 'lastAction', $lastlastAction ?? '');
+
+        $GLOBALS['TSFE']->fe_user->setKey('ses', 'lastlastAction', $actionName);
     }
 
     /**
@@ -226,18 +190,20 @@ class StoreInventoryController extends ActionController implements LoggerAwareIn
         try {
             $isLoggedIn = $objectManager->get(Context::class)->getPropertyFromAspect('frontend.user', 'isLoggedIn');
         } catch (AspectNotFoundException $e) {
-            $this->view->assign('errorMsg', 'The user login checker failed!');
+            $this->view->assign('errorMsg', 'The user login checker failed :/');
         }
 
         if($isLoggedIn) {
-            $this->addCategoryFromOption();
+            $this->view->assign('categoryOptions', $this->categoryRepository->findAllForFormOptions());
 
-            $userGroupUid = $this->getUserGroupUidFromLoggedInUser();
-
-            $delieverrandoUids = $this->delieverrandoRepository->findDelieverRandoUidsForUserGroup($userGroupUid);
+            $delieverrandoUids = $this->delieverrandoRepository->findDelieverRandoUidsForUserGroup();
             $deliverrando = $this->delieverrandoRepository->findByUid($delieverrandoUids[0]);
             if($deliverrando->getAddress() !== '') {
-                $products = $this->productRepository->findAllWithDieverRandoUids($delieverrandoUids);
+                try {
+                    $products = $this->productRepository->findAllWithDieverRandoUids($delieverrandoUids);
+                } catch (InvalidQueryException $e) {
+                    $this->view->assign('errorMsg', 'Could not get the products of your Deliverrando :/');
+                }
 
                 $this->view->assign('products', $products);
                 $this->view->assign('delieverrandoName', $deliverrando->getName());
@@ -301,9 +267,9 @@ class StoreInventoryController extends ActionController implements LoggerAwareIn
         if($categoryObj !== null) {
             $product->addCategory($categoryObj);
         }
-
-        $delieverrando = $this->getDelieverRandoFromLoggedInUser();
+        $delieverrando = $this->delieverrandoRepository->findByLoggedInFeUser();
         $product->setDelieverrando($delieverrando);
+
         $delieverrando->addProduct($product);
         $this->delieverrandoRepository->update($delieverrando);
 
@@ -322,8 +288,7 @@ class StoreInventoryController extends ActionController implements LoggerAwareIn
         $deliverrandoUid = GeneralUtility::_GET('deliverrandoUid');
         assert($deliverrandoUid !== null);
 
-        $GLOBALS['TSFE']->fe_user->setKey('ses', 'uid', $loginPerson->getUid());
-        $GLOBALS['TSFE']->fe_user->setKey('ses', 'dUid', intval($deliverrandoUid));
+        CustomerSessionHelper::login($loginPerson, intval($deliverrandoUid));
 
         $this->redirect('index');
     }
@@ -333,8 +298,7 @@ class StoreInventoryController extends ActionController implements LoggerAwareIn
      */
     public function logoutAction() : void
     {
-        $GLOBALS['TSFE']->fe_user->setKey('ses', 'uid', null);
-        $GLOBALS['TSFE']->fe_user->setKey('ses', 'dUid', null);
+        CustomerSessionHelper::logout();
 
         $this->redirect('index');
     }
@@ -374,9 +338,7 @@ class StoreInventoryController extends ActionController implements LoggerAwareIn
      */
     public function registerPersonAddressAction(Person $person) : void
     {
-        $passwordHash = GeneralUtility::makeInstance(PasswordHashFactory::class)->getDefaultHashInstance('FE');
-
-        $person->setPassword($passwordHash->getHashedPassword($person->getPassword()));
+        $person->hashPassword();
 
         $this->personRepository->add($person);
 
@@ -390,70 +352,9 @@ class StoreInventoryController extends ActionController implements LoggerAwareIn
     /**
      * @return void
      */
-    public function initializeAction() : void
-    {
-        $actionName = $this->resolveActionMethodName();
-
-        $lastlastAction = $GLOBALS['TSFE']->fe_user->getKey('ses', 'lastlastAction');
-        $GLOBALS['TSFE']->fe_user->setKey('ses', 'lastAction', $lastlastAction ?? '');
-
-        $GLOBALS['TSFE']->fe_user->setKey('ses', 'lastlastAction', $actionName);
-    }
-
-    /**
-     * @return void
-     */
     public function initializeEndOrderAction() : void
     {
         $this->defaultViewObjectName = JsonView::class;
-    }
-
-    /**
-     * @param \MyVendor\Deliverrando\Domain\Model\Person $loggedInPerson
-     * @return \MyVendor\Deliverrando\Domain\Model\Order
-     */
-    private function setupOrderFromPostArguments(Person $loggedInPerson) : \MyVendor\Deliverrando\Domain\Model\Order
-    {
-        $order = new \MyVendor\Deliverrando\Domain\Model\Order($loggedInPerson);
-
-        $deliverytime = 0;
-
-        for($i = 0; GeneralUtility::_POST('products' . $i) !== null; ++$i) {
-            $product = $this->productRepository->findOneByName(GeneralUtility::_POST('products' . $i));
-            $productQuantity = GeneralUtility::_POST('quantity' . $i);
-            assert($product !== null);
-
-            if($product->getDeliverytime() > $deliverytime) {
-                $deliverytime = $product->getDeliverytime();
-            }
-
-            $order->addProductDescription($product, $productQuantity);
-        }
-        $order->setDeliverytime($deliverytime);
-
-        $this->orderRepository->add($order);
-
-        return $order;
-    }
-
-    /**
-     * @param \MyVendor\Deliverrando\Domain\Model\Person $loggedInPerson
-     * @param int $deliveryTime
-     * @param string $productNameList
-     * @return void
-     */
-    private function sendEmail(Person $loggedInPerson, int $deliveryTime,
-                               string $productNameList) : void
-    {
-        $email = GeneralUtility::makeInstance(MailMessage::class);
-        $email->setCharset('UTF-8');
-        $email->setSubject("Delieverrando Bestellung");
-        $email->setFrom(['order@delieverrando.com' => 'Delieverrando']);
-        $email->setTo([$loggedInPerson->getEmail() => $loggedInPerson->getName()]);
-        $email->setBody("<h4>Du hast Essen bestellt!</h4>" . "<p>Es wird in: " . $deliveryTime . ($deliveryTime === 1 ? " Minute " : " Minuten ")
-            ."geliefert!<br />Bestellzusammenfassung:</p>" . $productNameList, ENT_QUOTES | ENT_HTML5 | ENT_DISALLOWED | ENT_SUBSTITUTE,
-            'UTF-8');
-        $email->send();
     }
 
     /**
@@ -462,57 +363,12 @@ class StoreInventoryController extends ActionController implements LoggerAwareIn
     public function endOrderAction() : void
     {
         assert($GLOBALS['TSFE']->type === 100);
-        assert($GLOBALS['TSFE']->fe_user->getKey('ses', 'uid') !== null);
 
-        $loggedInPerson = $this->personRepository->findByUid($GLOBALS['TSFE']->fe_user->getKey('ses', 'uid'));
-        assert($loggedInPerson !== null);
+        $objectManager = GeneralUtility::makeInstance(ObjectManager::class);
+        $jsonResponse = $objectManager->get(CreateOrderHelper::class)->createOrderAndJson($this->settings['bingApiKey']);
 
         $this->view->setVariablesToRender(['responseRoot']);
-
-        $order = $this->setupOrderFromPostArguments($loggedInPerson);
-        $productDescs = $order->getProductDescriptions();
-        $productNameList = '<ul>';
-        $quantitySum = 0;
-
-        $deliverrandoAddress = $productDescs[0]->getProduct()->getDelieverrando()->getAddress();
-        $personAddress = $loggedInPerson->getAddress();
-
-        $bingMapsRestApiHelper = GeneralUtility::makeInstance(ObjectManager::class)->get(BingMapsRestApiHelper::class);
-        $json = $bingMapsRestApiHelper->makeApiCall('/Routes?wayPoint.1='. $deliverrandoAddress .
-            '&wayPoint.2=' . $personAddress . '&optimizeWaypoints=true&routeAttributes=all', $this->settings['bingApiKey']);
-        if($json === 'InvalidStatusCode') {
-            $this->view->assignMultiple(['responseRoot' => [
-                'error' => 'error'
-            ]]);
-            return;
-        }
-        assert($json->resourceSets[0]->estimatedTotal === 1);
-
-        $travelDuration = $json->resourceSets[0]->resources[0]->travelDuration / 60;
-        $order->setDeliverytime($order->getDeliverytime() + $travelDuration);
-
-        foreach($productDescs as $productDesc) {
-            $product = $productDesc->getProduct();
-            $productNameList .= '<li>x' . $productDesc->getQuantity() . ' ' . $product->getName() . '</li>';
-            $product->setQuantity($product->getQuantity() - $productDesc->getQuantity());
-            if($product->getQuantity() < 0) {
-                $this->logger->error('There is/are not enough ' . $product->getName() . '(s) available');
-            }
-            $this->productRepository->update($productDesc->getProduct());
-
-            $quantitySum += $productDesc->getQuantity();
-        }
-        $productNameList .= '</ul>';
-
-        $this->sendEmail($loggedInPerson, $order->getDeliverytime(), $productNameList);
-
-        $this->persistAll();
-
-        $this->view->assignMultiple(['responseRoot' => [
-            'deliverytime' => $order->getDeliverytime(),
-            'orderUid' => $order->getUid(),
-            'quantitySum' => $quantitySum,
-        ]]);
+        $this->view->assignMultiple(['responseRoot' => $jsonResponse]);
     }
 
     public function initializeProgressUpdateAction()
