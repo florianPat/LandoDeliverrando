@@ -1,12 +1,19 @@
 <!--NOTE: wird aufgerufen, wenn die indexAction des StoreInventory controllers getriggered wird. -->
 
-<div id="vueOrderProducts">
-    <div v-if="finishedOrder">
+<div id="vueOrderProducts" xmlns:f="http://www.w3.org/1999/XSL/Transform">
+    <f:if condition="{errorMsg}">
+        <h2 class="errorTextColor">{errorMsg}</h2>
+    </f:if>
+
+    <div v-if="finishedOrder == 1">
         <h1>Vielen Dank für ihre Bestellung!</h1>
         <p>Sie müssen nur noch <food-counter :json-response="makeOrderJsonResponse"></food-counter> Minuten auf ihr Essen warten!</p>
         <br />
         <food-progress :json-response="makeOrderJsonResponse" :progress-length="makeOrderJsonResponse.quantitySum"
                        link-get-progress-action='<f:link.action pageType="100" pageUid="6" action="progressUpdate"></f:link.action>'></food-progress>
+    </div>
+    <div v-if="finishedOrder == -1">
+        <h1 class="errorTextColor">Leider gab es einen Fehler bei der Übermittlung :/</h1>
     </div>
 
     <span v-show="!finishedOrder">
@@ -22,59 +29,92 @@
             <div class="row">
                 <f:if condition="{opened}">
                     <f:then>
-                        <div class="columns-10">
-                            <h2>{delieverrandoName}</h2>
+                        <f:if condition="{products}">
+                            <f:then>
+                                <f:security.ifAuthenticated>
+                                    <f:else>
+                                        <div class="col-1">
+                                            <f:link.action action="index" class="btn btn-primary"><-</f:link.action>
+                                        </div>
+                                    </f:else>
+                                </f:security.ifAuthenticated>
+                                <div class="col-8">
+                                    <h2>{delieverrandoName}</h2>
 
-                            <table border="1" cellspacing="1" cellpadding="5">
-                                <tr>
-                                    <td><strong>Product name</strong></td>
-                                    <td><strong>Product description</strong></td>
-                                    <td><strong>Quantity</strong></td>
-                                    <td><strong>Time of delievery</strong></td>
-                                    <td><strong>Categories</strong></td>
-                                </tr>
-                                <f:for each="{products}" as="product">
-                                    <tr>
-                                        <td>{product.name}</td>
-                                        <td><f:format.crop maxCharacters="100">{product.description}</f:format.crop></td>
-                                        <td>{product.quantity}</td>
-                                        <td>{product.deliverytime}</td>
-                                        <td>
-                                            <f:for each="{product.categories}" as="category" iteration="it">
-                                                <f:if condition="{it.isLast}">
-                                                    <f:then>
-                                                        {category.name}
-                                                    </f:then>
-                                                    <f:else>
-                                                        {category.name},
-                                                    </f:else>
-                                                </f:if>
+                                    <table class="table-striped table-bordered">
+                                        <thead>
+                                        <tr>
+                                            <td><strong>Product name</strong></td>
+                                            <td><strong>Product description</strong></td>
+                                            <td><strong>Quantity</strong></td>
+                                            <td><strong>Time of delievery</strong></td>
+                                            <td><strong>Categories</strong></td>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                            <f:for each="{products}" as="product">
+                                                <tr>
+                                                    <td>{product.name}</td>
+                                                    <td><f:format.crop maxCharacters="100">{product.description}</f:format.crop></td>
+                                                    <td>{product.quantity}</td>
+                                                    <td>{product.deliverytime}</td>
+                                                    <td>
+                                                        <f:for each="{product.categories}" as="category" iteration="it">
+                                                            <f:if condition="{it.isLast}">
+                                                                <f:then>
+                                                                    {category.name}
+                                                                </f:then>
+                                                                <f:else>
+                                                                    {category.name},
+                                                                </f:else>
+                                                            </f:if>
+                                                        </f:for>
+                                                    </td>
+                                                    <f:if condition="{personLoggedIn}">
+                                                        <td>
+                                                            <a @click="$emit('addProductToOrder', '{product.name}')">
+                                                                <img src="typo3conf/ext/deliverrando/Resources/Public/Images/plus.jpg" width="20px"/>
+                                                            </a>
+                                                        </td>
+                                                    </f:if>
+                                                    <f:security.ifAuthenticated>
+                                                        <td>
+                                                            <f:link.action controller="StoreInventory" action="remove" arguments="{product: product}">
+                                                                <strong>-</strong>
+                                                            </f:link.action>
+                                                        </td>
+                                                    </f:security.ifAuthenticated>
+                                                </tr>
                                             </f:for>
-                                        </td>
-                                        <f:if condition="{personLoggedIn}">
-                                            <td>
-                                                <a @click="$emit('addProductToOrder', '{product.name}')">
-                                                    <img src="typo3conf/ext/deliverrando/Resources/Public/Images/plus.jpg" width="20px"/>
-                                                </a>
-                                            </td>
-                                        </f:if>
-                                        <f:security.ifAuthenticated>
-                                            <td>
-                                                <f:link.action controller="StoreInventory" action="remove" arguments="{product: product}">
-                                                    <strong>-</strong>
-                                                </f:link.action>
-                                            </td>
-                                        </f:security.ifAuthenticated>
-                                    </tr>
-                                </f:for>
-                            </table>
-                        </div>
-                        <div class="columns-2">
-                            <shopping-card link-order-end-action='<f:link.action pageType="100" pageUid="6" action="endOrder">Jetzt bestellen</f:link.action>' />
-                        </div>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="col-3">
+                                    <shopping-card link-order-end-action='<f:link.action pageType="100" pageUid="6" action="endOrder">Jetzt bestellen</f:link.action>' />
+                                </div>
+                            </f:then>
+                            <f:else>
+                                <table class="table table-hover deliverrandoSelectionTable">
+                                    <thead>
+                                        <tr>
+                                            <td><strong>Deliverrando</strong></td>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <f:for each="{deliverrandos}" as="deliverrando">
+                                            <tr>
+                                                <td>
+                                                    <f:link.action action="index" arguments="{deliverrandoUid: deliverrando.uid}">{deliverrando.name}</f:link.action>
+                                                </td>
+                                            </tr>
+                                        </f:for>
+                                    </tbody>
+                                </table>
+                            </f:else>
+                        </f:if>
                     </f:then>
                     <f:else>
-                        <div class="columns-12">
+                        <div class="col-12">
                             <p>Geschlossen!</p>
                         </div>
                     </f:else>
@@ -95,12 +135,12 @@
             <p id="lastAction">{lastAction}</p>
         </div>
 
-        <div class="addProductDiv">
-            <!-- where your own viewhelpers are defined -->
-            {namespace myVH=MyVendor\Deliverrando\ViewHelper}
+        <!--Ist der user als frontend user eingeloggt?-->
+        <f:security.ifAuthenticated>
+            <div class="addProductDiv">
+                <!-- where your own viewhelpers are defined -->
+                {namespace myVH=MyVendor\Deliverrando\ViewHelper}
 
-            <!--Ist der user als frontend user eingeloggt?-->
-            <f:security.ifAuthenticated>
                 <!-- NOTE: wenn man name="argument" benutzt, wird das argument beim aufruf richtig gemappt. arguments="" wie bei einem link
                      bringen gar nichts! -->
                 <!-- NOTE: name="the argument of the action" in .form und property setzt das argument!! -->
@@ -114,10 +154,9 @@
 
                     <f:form.submit value="Add"/>
                 </f:form>
-            </f:security.ifAuthenticated>
-        </div>
-
-        <br>
+            </div>
+            <br>
+        </f:security.ifAuthenticated>
 
         <div class="loginSectionDiv">
             <f:security.ifAuthenticated>
@@ -156,13 +195,13 @@
                                         </h5>
                                     </div>
                                     <div id="personLogin" style="display: none" class="accordionClass">
-                                        <f:form controller="StoreInventory" action="login" name="person" id="personLoginForm">
+                                        <f:form controller="StoreInventory" action="login" name="person" id="personLoginForm" additionalParams="{deliverrandoUid: deliverrandoUid}">
                                             <myVH:formFieldHelp tag='<f:form.textfield property="name" required="true" />' idPrefix="loginAction" />
                                             <myVH:formFieldHelp tag='<f:form.password property="password" />' idPrefix="loginAction" />
 
                                             <f:form.submit value="logIn" />
                                         </f:form>
-                                        <f:form name="person" controller="StoreInventory" action="register" style="display: none;" id="personRegisterForm">
+                                        <f:form name="person" controller="StoreInventory" action="register" style="display: none;" id="personRegisterForm" additionalParams="{deliverrandoUid: deliverrandoUid}">
                                             <myVH:formFieldHelp tag='<f:form.textfield property="name" required="true" />' idPrefix="registerAction" />
                                             <myVH:formFieldHelp tag='<f:form.password property="password" />' idPrefix="registerAction" />
                                             <myVH:formFieldHelp tag='<f:form.textfield property="telephonenumber" required="true" />' idPrefix="registerAction" />

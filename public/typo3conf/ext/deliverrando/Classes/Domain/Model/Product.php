@@ -3,6 +3,7 @@
 namespace MyVendor\Deliverrando\Domain\Model;
 
 use TYPO3\CMS\Extbase\DomainObject\AbstractEntity;
+use TYPO3\CMS\Extbase\Persistence\ObjectStorage;
 
 class Product extends AbstractEntity
 {
@@ -54,7 +55,7 @@ class Product extends AbstractEntity
         $this->description = $description;
         $this->quantity = $quantity;
         $this->deliverytime = $deliverytime;
-        $this->categories = new \TYPO3\CMS\Extbase\Persistence\ObjectStorage();
+        $this->categories = new ObjectStorage();
     }
 
     /**
@@ -145,7 +146,7 @@ class Product extends AbstractEntity
      * @param \TYPO3\CMS\Extbase\Persistence\ObjectStorage<\MyVendor\Deliverrando\Domain\Model\Category>
      * @return void
      */
-    public function setCategories(\TYPO3\CMS\Extbase\Persistence\ObjectStorage $categories) : void
+    public function setCategories(ObjectStorage $categories) : void
     {
         $this->categories = $categories;
     }
@@ -154,7 +155,7 @@ class Product extends AbstractEntity
      * @param \MyVendor\Deliverrando\Domain\Model\Category $category
      * @return void
      */
-    public function addCategory(\MyVendor\Deliverrando\Domain\Model\Category $category) : void
+    public function addCategory(Category $category) : void
     {
         $this->categories->attach($category);
     }
@@ -163,7 +164,7 @@ class Product extends AbstractEntity
      * @param \MyVendor\Deliverrando\Domain\Model\Category $category
      * @return void
      */
-    public function removeCategory(\MyVendor\Deliverrando\Domain\Model\Category $category) : void
+    public function removeCategory(Category $category) : void
     {
         $this->categories->detach($category);
     }
@@ -172,7 +173,7 @@ class Product extends AbstractEntity
      * @param \MyVendor\Deliverrando\Domain\Model\Delieverrando $delieverrando
      * @return void
      */
-    public function setDelieverrando(\MyVendor\Deliverrando\Domain\Model\Delieverrando $delieverrando) : void
+    public function setDelieverrando(Delieverrando $delieverrando) : void
     {
         $this->delieverrando = $delieverrando;
     }

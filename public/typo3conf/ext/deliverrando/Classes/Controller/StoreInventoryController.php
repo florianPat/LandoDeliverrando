@@ -2,19 +2,25 @@
 
 namespace MyVendor\Deliverrando\Controller;
 
+use MyVendor\Deliverrando\Controller\Helper\BingMapsRestApiHelper;
 use MyVendor\Deliverrando\Domain\Model\Delieverrando;
 use MyVendor\Deliverrando\Domain\Model\Person;
-use MyVendor\Deliverrando\Domain\Validator\PersonValidNameValidator;
+use MyVendor\Deliverrando\Domain\Model\Product;
+use MyVendor\Deliverrando\Domain\Repository\CategoryRepository;
+use MyVendor\Deliverrando\Domain\Repository\OrderRepository;
+use MyVendor\Deliverrando\Domain\Repository\PersonRepository;
+use MyVendor\Deliverrando\Domain\Repository\ProductRepository;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerAwareTrait;
 use TYPO3\CMS\Core\Context\Context;
+use TYPO3\CMS\Core\Context\Exception\AspectNotFoundException;
 use TYPO3\CMS\Core\Crypto\PasswordHashing\PasswordHashFactory;
+use TYPO3\CMS\Core\Mail\MailMessage;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Mvc\Controller\ActionController;
-use TYPO3\CMS\Extbase\Mvc\Web\Routing\UriBuilder;
+use TYPO3\CMS\Extbase\Mvc\View\JsonView;
 use TYPO3\CMS\Extbase\Object\ObjectManager;
 use TYPO3\CMS\Extbase\Persistence\Generic\PersistenceManager;
-use TYPO3\CMS\Extbase\Validation\Validator\ConjunctionValidator;
 
 class StoreInventoryController extends ActionController implements LoggerAwareInterface
 {
@@ -28,35 +34,59 @@ class StoreInventoryController extends ActionController implements LoggerAwareIn
     /**
      * @var \MyVendor\Deliverrando\Domain\Repository\DelieverrandoRepository
      * @TYPO3\CMS\Extbase\Annotation\Inject
-     * NOTE: Has the same effect as declaring the method injectCategoryRepository
+     * NOTE: Has the same effect as declaring the method injectDelieverrandoRepository
      */
     private $delieverrandoRepository;
 
     /**
-     * @var \MyVendor\Deliverrando\Domain\Repository\CategoryRepository
-     * @TYPO3\CMS\Extbase\Annotation\Inject
+     * @var CategoryRepository
      */
     private $categoryRepository;
 
     /**
-     * @var \MyVendor\Deliverrando\Domain\Repository\PersonRepository
-     * @TYPO3\CMS\Extbase\Annotation\Inject
+     * @var PersonRepository
      */
     private $personRepository;
 
     /**
-     * @var \MyVendor\Deliverrando\Domain\Repository\OrderRepository
-     * @TYPO3\CMS\Extbase\Annotation\Inject
+     * @var OrderRepository
      */
     private $orderRepository;
 
     /**
-    *  @param \MyVendor\Deliverrando\Domain\Repository\ProductRepository $productRepository
+    *  @param ProductRepository $productRepository
     *  @return void
     */
-    public function injectProductRepository(\MyVendor\Deliverrando\Domain\Repository\ProductRepository $productRepository)
+    public function injectProductRepository(ProductRepository $productRepository) : void
     {
         $this->productRepository = $productRepository;
+    }
+
+    /**
+     * @param CategoryRepository $categoryRepository
+     * @return void
+     */
+    public function injectCategoryRepository(CategoryRepository $categoryRepository) : void
+    {
+        $this->categoryRepository = $categoryRepository;
+    }
+
+    /**
+     * @param PersonRepository $personRepository
+     * @return void
+     */
+    public function injectPersonRepository(PersonRepository $personRepository) : void
+    {
+        $this->personRepository = $personRepository;
+    }
+
+    /**
+     * @param OrderRepository $orderRepository
+     * @return void
+     */
+    public function injectOrderRepository(OrderRepository $orderRepository) : void
+    {
+        $this->orderRepository = $orderRepository;
     }
 
     /**
@@ -64,7 +94,11 @@ class StoreInventoryController extends ActionController implements LoggerAwareIn
      */
     private function getUserGroupUidFromLoggedInUser() : int
     {
-        $userGroupUids = GeneralUtility::makeInstance(ObjectManager::class)->get(Context::class)->getPropertyFromAspect('frontend.user', 'groupIds');
+        try {
+            $userGroupUids = GeneralUtility::makeInstance(ObjectManager::class)->get(Context::class)->getPropertyFromAspect('frontend.user', 'groupIds');
+        } catch (AspectNotFoundException $e) {
+            return 0;
+        }
         assert($userGroupUids !== null);
         //NOTE: TODO: This is kind of a hack
         $result = $userGroupUids[count($userGroupUids) - 1];
@@ -75,7 +109,7 @@ class StoreInventoryController extends ActionController implements LoggerAwareIn
     /**
      * @return \MyVendor\Deliverrando\Domain\Model\Delieverrando
      */
-    private function getDelieverRandoFromLoggedInUser() : \MyVendor\Deliverrando\Domain\Model\Delieverrando
+    private function getDelieverRandoFromLoggedInUser() : Delieverrando
     {
         $userGroupUid = $this->getUserGroupUidFromLoggedInUser();
         assert($userGroupUid !== null);
@@ -124,19 +158,21 @@ class StoreInventoryController extends ActionController implements LoggerAwareIn
     }
 
     /**
-     * @param Delieverrando $deliverrando
+     * @param \MyVendor\Deliverrando\Domain\Model\Delieverrando $deliverrando
      * @param string $postCode
      * @param string $address
+     * @return void
      * @\TYPO3\CMS\Extbase\Annotation\Validate("NumberValidator", param="postCode")
      * @\TYPO3\CMS\Extbase\Annotation\Validate("StringLengthValidator", options={"minimum": 5, "maximum": 5}, param="postCode")
      * @\TYPO3\CMS\Extbase\Annotation\Validate("\MyVendor\Deliverrando\Domain\Validator\PostCodeValidator", param="postCode")
-     * @return void
      */
     public function postRegisterDeliverrandoAction(Delieverrando $deliverrando, string $postCode = '', string $address = '') : void
     {
         $this->view->assign('deliverrando', $deliverrando);
         if($postCode !== '') {
-            $this->view->assign('postCode', $postCode);
+            $bingMapsRestApiHelper = GeneralUtility::makeInstance(ObjectManager::class)->get(BingMapsRestApiHelper::class);
+            $json = $bingMapsRestApiHelper->getLastResult();
+            $this->view->assign('postCode', $postCode . ';' . $json->resourceSets[0]->resources[0]->address->locality);
         }
         if($address !== '') {
             $deliverrando->setAddress($address);
@@ -148,20 +184,33 @@ class StoreInventoryController extends ActionController implements LoggerAwareIn
     /**
      * @param string $messageText
      * @param \MyVendor\Deliverrando\Domain\Model\Product $product
+     * @param int $deliverrandoUid
      * @return void
-    */
-    public function indexAction(string $messageText = '', \MyVendor\Deliverrando\Domain\Model\Product $product = null) : void
+     */
+    public function indexAction(string $messageText = '', Product $product = null, int $deliverrandoUid = 0) : void
     {
+        $lastAction = $GLOBALS['TSFE']->fe_user->getKey('ses', 'lastAction');
+        assert($lastAction !== null);
+        $this->view->assign('lastAction', $lastAction);
+
         if($GLOBALS['TSFE']->fe_user->getKey('ses', 'uid') !== null) {
             $this->view->assign('personLoggedIn', 'true');
+            if($lastAction !== 'indexAction') {
+                $deliverrandoUid = $GLOBALS['TSFE']->fe_user->getKey('ses', 'dUid');
+                assert($deliverrandoUid !== null);
+            }
             //if($this->isOpened($context->getPropertyFromAspect('date', 'iso'))) {
                 $this->view->assign('opened', true);
             //}
         } else {
+            if($GLOBALS['TSFE']->fe_user->getKey('ses', 'dUid') !== null) {
+                $GLOBALS['TSFE']->fe_user->setKey('ses', 'dUid', null);
+            }
+
             $this->view->assign('opened', true);
         }
-        assert($GLOBALS['TSFE']->fe_user->getKey('ses', 'lastAction') !== null);
-        $this->view->assign('lastAction', $GLOBALS['TSFE']->fe_user->getKey('ses', 'lastAction'));
+
+        $this->view->assign('deliverrandoUid', $deliverrandoUid);
 
         if($messageText !== '') {
             assert($product !== null);
@@ -171,7 +220,16 @@ class StoreInventoryController extends ActionController implements LoggerAwareIn
             $this->persistAll();
         }
 
-        if(GeneralUtility::makeInstance(ObjectManager::class)->get(Context::class)->getPropertyFromAspect('frontend.user', 'isLoggedIn')) {
+        $objectManager = GeneralUtility::makeInstance(ObjectManager::class);
+
+        $isLoggedIn = false;
+        try {
+            $isLoggedIn = $objectManager->get(Context::class)->getPropertyFromAspect('frontend.user', 'isLoggedIn');
+        } catch (AspectNotFoundException $e) {
+            $this->view->assign('errorMsg', 'The user login checker failed!');
+        }
+
+        if($isLoggedIn) {
             $this->addCategoryFromOption();
 
             $userGroupUid = $this->getUserGroupUidFromLoggedInUser();
@@ -187,7 +245,12 @@ class StoreInventoryController extends ActionController implements LoggerAwareIn
                 $this->redirect('postRegisterDeliverrando', null, null, ['deliverrando' => $deliverrando]);
             }
         } else {
-            $this->view->assign('products', $this->productRepository->findAll());
+            if($deliverrandoUid === 0) {
+                $this->view->assign('deliverrandos', $this->delieverrandoRepository->findAll());
+            } else {
+                $this->view->assign('products', $this->productRepository->findAllWithDieverRandoUids([$deliverrandoUid]));
+                $this->view->assign('delieverrandoName', $this->delieverrandoRepository->findByUid($deliverrandoUid)->getName());
+            }
         }
      }
 
@@ -195,7 +258,7 @@ class StoreInventoryController extends ActionController implements LoggerAwareIn
      * @param \MyVendor\Deliverrando\Domain\Model\Product $product
      * @return void
      */
-    public function showAction(\MyVendor\Deliverrando\Domain\Model\Product $product) : void
+    public function showAction(Product $product) : void
     {
         $this->view->assign('product', $product);
     }
@@ -204,7 +267,7 @@ class StoreInventoryController extends ActionController implements LoggerAwareIn
      * @param \MyVendor\Deliverrando\Domain\Model\Product $product
      * @return void
      */
-    public function removeAction(\MyVendor\Deliverrando\Domain\Model\Product $product) : void
+    public function removeAction(Product $product) : void
     {
         $this->productRepository->remove($product);
 
@@ -216,7 +279,7 @@ class StoreInventoryController extends ActionController implements LoggerAwareIn
      * @param \MyVendor\Deliverrando\Domain\Model\Product $product
      * @return void
      */
-    public function updateAction(\MyVendor\Deliverrando\Domain\Model\Product $product) : void
+    public function updateAction(Product $product) : void
     {
         $this->productRepository->update($product);
         $this->forward('index', null, null, ['messageText' => 'Updated', 'product' => $product]);
@@ -232,7 +295,7 @@ class StoreInventoryController extends ActionController implements LoggerAwareIn
      * NOTE: Before the action runs, the arguments are validated. The annotations from the properties, the Validator with
      * the name \MyVendor\Deliverrando\Domain\Validator\ClassnameValidator, and the annotations in the action
      */
-    public function addAction(\MyVendor\Deliverrando\Domain\Model\Product $product, int $category) : void
+    public function addAction(Product $product, int $category) : void
     {
         $categoryObj = $this->categoryRepository->findByUid($category);
         if($categoryObj !== null) {
@@ -248,7 +311,7 @@ class StoreInventoryController extends ActionController implements LoggerAwareIn
     }
 
     /**
-     * @param Person $person
+     * @param \MyVendor\Deliverrando\Domain\Model\Person $person
      * @\TYPO3\CMS\Extbase\Annotation\Validate("\MyVendor\Deliverrando\Domain\Validator\PersonNamePasswordValidator", param="person")
      * @return void
      */
@@ -256,7 +319,11 @@ class StoreInventoryController extends ActionController implements LoggerAwareIn
     {
         $loginPerson = $this->personRepository->findByName($person->getName());
 
+        $deliverrandoUid = GeneralUtility::_GET('deliverrandoUid');
+        assert($deliverrandoUid !== null);
+
         $GLOBALS['TSFE']->fe_user->setKey('ses', 'uid', $loginPerson->getUid());
+        $GLOBALS['TSFE']->fe_user->setKey('ses', 'dUid', intval($deliverrandoUid));
 
         $this->redirect('index');
     }
@@ -267,19 +334,27 @@ class StoreInventoryController extends ActionController implements LoggerAwareIn
     public function logoutAction() : void
     {
         $GLOBALS['TSFE']->fe_user->setKey('ses', 'uid', null);
+        $GLOBALS['TSFE']->fe_user->setKey('ses', 'dUid', null);
 
         $this->redirect('index');
     }
 
     /**
-     * @param Person $person
-     * @\TYPO3\CMS\Extbase\Annotation\Validate("\MyVendor\Deliverrando\Domain\Validator\PersonValidNameValidator", param="person")
+     * @param \MyVendor\Deliverrando\Domain\Model\Person $person
+     * @\TYPO3\CMS\Extbase\Annotation\Validate("\MyVendor\Deliverrando\Domain\Validator\PersonRegisterValidator", param="person")
      * @return void
      */
     public function registerAction(Person $person) : void
     {
+        $deliverrandoUid = GeneralUtility::_GET('deliverrandoUid');
+        assert($deliverrandoUid !== null);
+        $GLOBALS['TSFE']->fe_user->setKey('ses', 'dUid', intval($deliverrandoUid));
+
         $this->view->assign('person', $person);
-        $this->view->assign('postCode', $person->getAddress());
+
+        $bingMapsRestApiHelper = GeneralUtility::makeInstance(ObjectManager::class)->get(BingMapsRestApiHelper::class);
+        $json = $bingMapsRestApiHelper->getLastResult();
+        $this->view->assign('postCode', $person->getAddress() . ';' . $json->resourceSets[0]->resources[0]->address->locality);
     }
 
     /**
@@ -294,7 +369,7 @@ class StoreInventoryController extends ActionController implements LoggerAwareIn
     }
 
     /**
-     * @param Person $person
+     * @param \MyVendor\Deliverrando\Domain\Model\Person $person
      * @return void
      */
     public function registerPersonAddressAction(Person $person) : void
@@ -325,13 +400,16 @@ class StoreInventoryController extends ActionController implements LoggerAwareIn
         $GLOBALS['TSFE']->fe_user->setKey('ses', 'lastlastAction', $actionName);
     }
 
-    public function initializeEndOrderAction()
+    /**
+     * @return void
+     */
+    public function initializeEndOrderAction() : void
     {
-        $this->defaultViewObjectName = \TYPO3\CMS\Extbase\Mvc\View\JsonView::class;
+        $this->defaultViewObjectName = JsonView::class;
     }
 
     /**
-     * @param Person $loggedInPerson
+     * @param \MyVendor\Deliverrando\Domain\Model\Person $loggedInPerson
      * @return \MyVendor\Deliverrando\Domain\Model\Order
      */
     private function setupOrderFromPostArguments(Person $loggedInPerson) : \MyVendor\Deliverrando\Domain\Model\Order
@@ -359,7 +437,7 @@ class StoreInventoryController extends ActionController implements LoggerAwareIn
     }
 
     /**
-     * @param Person $loggedInPerson
+     * @param \MyVendor\Deliverrando\Domain\Model\Person $loggedInPerson
      * @param int $deliveryTime
      * @param string $productNameList
      * @return void
@@ -367,7 +445,7 @@ class StoreInventoryController extends ActionController implements LoggerAwareIn
     private function sendEmail(Person $loggedInPerson, int $deliveryTime,
                                string $productNameList) : void
     {
-        $email = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(\TYPO3\CMS\Core\Mail\MailMessage::class);
+        $email = GeneralUtility::makeInstance(MailMessage::class);
         $email->setCharset('UTF-8');
         $email->setSubject("Delieverrando Bestellung");
         $email->setFrom(['order@delieverrando.com' => 'Delieverrando']);
@@ -389,6 +467,8 @@ class StoreInventoryController extends ActionController implements LoggerAwareIn
         $loggedInPerson = $this->personRepository->findByUid($GLOBALS['TSFE']->fe_user->getKey('ses', 'uid'));
         assert($loggedInPerson !== null);
 
+        $this->view->setVariablesToRender(['responseRoot']);
+
         $order = $this->setupOrderFromPostArguments($loggedInPerson);
         $productDescs = $order->getProductDescriptions();
         $productNameList = '<ul>';
@@ -396,12 +476,20 @@ class StoreInventoryController extends ActionController implements LoggerAwareIn
 
         $deliverrandoAddress = $productDescs[0]->getProduct()->getDelieverrando()->getAddress();
         $personAddress = $loggedInPerson->getAddress();
-        $response = file_get_contents('http://dev.virtualearth.net/REST/v1/Routes?wayPoint.1='. $deliverrandoAddress .
-            '&wayPoint.2=' . $personAddress . '&optimizeWaypoints=true&routeAttributes=all&key=' . $this->settings['bingApiKey']);
-        $json = json_decode($response);
-        assert($json->statusCode == 200);
+
+        $bingMapsRestApiHelper = GeneralUtility::makeInstance(ObjectManager::class)->get(BingMapsRestApiHelper::class);
+        $json = $bingMapsRestApiHelper->makeApiCall('/Routes?wayPoint.1='. $deliverrandoAddress .
+            '&wayPoint.2=' . $personAddress . '&optimizeWaypoints=true&routeAttributes=all', $this->settings['bingApiKey']);
+        if($json === 'InvalidStatusCode') {
+            $this->view->assignMultiple(['responseRoot' => [
+                'error' => 'error'
+            ]]);
+            return;
+        }
         assert($json->resourceSets[0]->estimatedTotal === 1);
-        $order->setDeliverytime($order->getDeliverytime() + $json->resourceSets[0]->resources[0]->travelDuraction);
+
+        $travelDuration = $json->resourceSets[0]->resources[0]->travelDuration / 60;
+        $order->setDeliverytime($order->getDeliverytime() + $travelDuration);
 
         foreach($productDescs as $productDesc) {
             $product = $productDesc->getProduct();
@@ -420,7 +508,6 @@ class StoreInventoryController extends ActionController implements LoggerAwareIn
 
         $this->persistAll();
 
-        $this->view->setVariablesToRender(['responseRoot']);
         $this->view->assignMultiple(['responseRoot' => [
             'deliverytime' => $order->getDeliverytime(),
             'orderUid' => $order->getUid(),
@@ -430,7 +517,7 @@ class StoreInventoryController extends ActionController implements LoggerAwareIn
 
     public function initializeProgressUpdateAction()
     {
-        $this->defaultViewObjectName = \TYPO3\CMS\Extbase\Mvc\View\JsonView::class;
+        $this->defaultViewObjectName = JsonView::class;
     }
 
     /**

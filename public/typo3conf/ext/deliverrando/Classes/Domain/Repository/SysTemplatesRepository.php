@@ -72,6 +72,7 @@ class SysTemplatesRepository
 
     /**
      * @param int $pid
+     * @return string
      */
     public function findHeaderForLargePictureWithText(int $pid)
     {
@@ -82,6 +83,8 @@ class SysTemplatesRepository
             $queryBuilder->expr()->eq('CType', $queryBuilder->createNamedParameter('deliverrando_largeimagetext'))
         )->execute();
 
-        return $statement->fetch()['header'];
+        $result = $statement->fetch()['header'];
+        assert($result !== null);
+        return $result;
     }
 }

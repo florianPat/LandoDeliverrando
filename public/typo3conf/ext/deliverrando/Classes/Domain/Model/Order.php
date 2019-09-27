@@ -3,6 +3,7 @@
 namespace MyVendor\Deliverrando\Domain\Model;
 
 use TYPO3\CMS\Extbase\DomainObject\AbstractEntity;
+use TYPO3\CMS\Extbase\Persistence\ObjectStorage;
 
 class Order extends AbstractEntity
 {
@@ -34,10 +35,10 @@ class Order extends AbstractEntity
     /**
      * @param \MyVendor\Deliverrando\Domain\Model\Person $person
      */
-    public function __construct(\MyVendor\Deliverrando\Domain\Model\Person $person = null)
+    public function __construct(Person $person = null)
     {
         $this->person = $person;
-        $this->products = new \TYPO3\CMS\Extbase\Persistence\ObjectStorage();
+        $this->products = new ObjectStorage();
         $this->productquantities = '';
         $this->productprogress = '';
         $this->deliverytime = 0;
@@ -47,7 +48,7 @@ class Order extends AbstractEntity
      * @param \MyVendor\Deliverrando\Domain\Model\Person $person
      * @return void
      */
-    public function setPerson(\MyVendor\Deliverrando\Domain\Model\Person $person) : void
+    public function setPerson(Person $person) : void
     {
         $this->person = $person;
     }
@@ -87,7 +88,7 @@ class Order extends AbstractEntity
      * @param \MyVendor\Deliverrando\Domain\Model\Product $product
      * @return void
      */
-    private function addProduct(\MyVendor\Deliverrando\Domain\Model\Product $product) : void
+    private function addProduct(Product $product) : void
     {
         $this->products->attach($product);
         if($this->productprogress !== '') {
@@ -111,11 +112,11 @@ class Order extends AbstractEntity
     }
 
     /**
-     * @param Product $product
+     * @param \MyVendor\Deliverrando\Domain\Model\Product $product
      * @param int $quantity
      * @return void
      */
-    public function addProductDescription(\MyVendor\Deliverrando\Domain\Model\Product $product, int $quantity) : void
+    public function addProductDescription(Product $product, int $quantity) : void
     {
         $this->addProduct($product);
         $this->addQuantity($quantity);

@@ -2,10 +2,12 @@
 
 namespace MyVendor\Deliverrando\Domain\Model\Helper;
 
+use MyVendor\Deliverrando\Domain\Model\Product;
+
 class ProductDescription
 {
     /**
-     * @var \MyVendor\Deliverrando\Domain\Model\Product
+     * @var Product
      */
     private $product;
 
@@ -18,7 +20,7 @@ class ProductDescription
      * @param \MyVendor\Deliverrando\Domain\Model\Product $product
      * @param int $quantity
      */
-    public function __construct(\MyVendor\Deliverrando\Domain\Model\Product $product, int $quantity)
+    public function __construct(Product $product, int $quantity)
     {
         $this->product = $product;
         $this->quantity = $quantity;
@@ -27,7 +29,7 @@ class ProductDescription
     /**
      * @return \MyVendor\Deliverrando\Domain\Model\Product
      */
-    public function getProduct() : \MyVendor\Deliverrando\Domain\Model\Product
+    public function getProduct() : Product
     {
         return $this->product;
     }

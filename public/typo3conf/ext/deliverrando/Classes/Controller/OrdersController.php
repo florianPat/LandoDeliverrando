@@ -2,18 +2,29 @@
 
 namespace MyVendor\Deliverrando\Controller;
 
+use MyVendor\Deliverrando\Domain\Repository\OrderRepository;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Mvc\Controller\ActionController;
+use TYPO3\CMS\Extbase\Mvc\View\JsonView;
 use TYPO3\CMS\Extbase\Mvc\Web\Routing\UriBuilder;
 use TYPO3\CMS\Extbase\Object\ObjectManager;
+use TYPO3\CMS\Extbase\Persistence\Exception\IllegalObjectTypeException;
 
 class OrdersController extends ActionController
 {
     /**
      * @var \MyVendor\Deliverrando\Domain\Repository\OrderRepository
-     * @TYPO3\CMS\Extbase\Annotation\Inject
      */
     private $orderRepository;
+
+    /**
+     * @param \MyVendor\Deliverrando\Domain\Repository\OrderRepository $orderRepository
+     * @return void
+     */
+    public function injectOrderRepository(OrderRepository $orderRepository) : void
+    {
+        $this->orderRepository = $orderRepository;
+    }
 
     /**
      * @return void
@@ -23,9 +34,12 @@ class OrdersController extends ActionController
 
     }
 
+    /**
+     * @return void
+     */
     public function initializeAjaxAction() : void
     {
-        $this->defaultViewObjectName = \TYPO3\CMS\Extbase\Mvc\View\JsonView::class;
+        $this->defaultViewObjectName = JsonView::class;
     }
 
     /**
@@ -73,6 +87,14 @@ class OrdersController extends ActionController
     /**
      * @return void
      */
+    public function initializeProgressAction() : void
+    {
+        $this->defaultViewObjectName = JsonView::class;
+    }
+
+    /**
+     * @return void
+     */
     public function updateProgressAction() : void
     {
         assert($GLOBALS['TSFE']->type === 100);
@@ -83,13 +105,19 @@ class OrdersController extends ActionController
     }
 
     /**
+     * @return void
+     */
+    public function initializeFinishAction() : void
+    {
+        $this->defaultViewObjectName = JsonView::class;
+    }
+
+    /**
      * @param \MyVendor\Deliverrando\Domain\Model\Order $order
      * @return void
      */
     public function finishAction(\MyVendor\Deliverrando\Domain\Model\Order $order) : void
     {
         $this->orderRepository->remove($order);
-
-        $this->redirect('index');
     }
 }

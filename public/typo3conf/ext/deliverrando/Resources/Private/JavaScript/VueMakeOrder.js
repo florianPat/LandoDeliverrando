@@ -236,13 +236,17 @@
                 'food-progress': FoodProgress,
             },
             data: {
-                finishedOrder: false,
+                finishedOrder: 0,
                 makeOrderJsonResponse: null,
             },
             mounted() {
                 this.$on('finishedOrder', (jsonResponse) => {
-                    this.makeOrderJsonResponse = jsonResponse;
-                    this.finishedOrder = true;
+                    if(jsonResponse.error !== undefined) {
+                        this.finishedOrder = -1;
+                    } else {
+                        this.makeOrderJsonResponse = jsonResponse;
+                        this.finishedOrder = 1;
+                    }
                 });
             }
         });

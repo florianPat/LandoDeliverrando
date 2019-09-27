@@ -16,7 +16,7 @@ class ProductValidator extends AbstractValidator
         if($value->getName() === null || is_string($value->getName())) {
             return;
         } else {
-            $this->addError('product.name:The name has to be a string!', 334769);
+            $this->addError('product.name:The name has to be a string!', 1569568342);
         }
     }
 }

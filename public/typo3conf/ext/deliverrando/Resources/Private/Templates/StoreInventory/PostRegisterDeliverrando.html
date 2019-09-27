@@ -2,14 +2,14 @@
     <f:if condition="{postCode}">
         <f:then>
             <div class="row">
-                <f:form controller="StoreInventory" action="postRegisterDeliverrando" style="width: 100%" arguments="{deliverrando: deliverrando}">
-                    <autocomplete-box post-code="{postCode}" input-name-attr="tx_deliverrando_productlist[address]"></autocomplete-box>
+                <f:form controller="StoreInventory" action="postRegisterDeliverrando" class="width100Percent" arguments="{deliverrando: deliverrando}">
+                    <autocomplete-box post-code="{postCode}" input-name-attr="tx_deliverrando_productlist[address]" api-key="{settings.bingApiKey}"></autocomplete-box>
                     <f:form.submit id="registerPersonSubmit" disabled="disabled" value="Set" class="registerPersonAddressSubmit" />
                 </f:form>
             </div>
         </f:then>
         <f:else>
-            <f:form controller="StoreInventory" action="postRegisterDeliverrando" style="width: 100%" arguments="{deliverrando: deliverrando}">
+            <f:form controller="StoreInventory" action="postRegisterDeliverrando" class="width100Percent" arguments="{deliverrando: deliverrando}">
                 <div class="registerPersonAddressInput">
                     <f:form.textfield name="postCode" required="true" placeholder="post code" />
                     <f:render section="formError" arguments="{property: 'postCode'}" />

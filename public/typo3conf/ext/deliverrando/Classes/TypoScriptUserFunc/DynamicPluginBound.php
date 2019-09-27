@@ -2,9 +2,8 @@
 
 namespace MyVendor\Deliverrando\TypoScriptUserFunc;
 
+use MyVendor\Deliverrando\Domain\Repository\SysTemplatesRepository;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3\CMS\Extbase\Object\ObjectManager;
-use TYPO3\CMS\Frontend\ContentObject\CaseContentObject;
 
 class DynamicPluginBound
 {
@@ -15,7 +14,7 @@ class DynamicPluginBound
      */
     public function getSelectedPluginForTemplate(string $content, array $conf) : string
     {
-        $sysTemplateRepository = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(\MyVendor\Deliverrando\Domain\Repository\SysTemplatesRepository::class);
+        $sysTemplateRepository = GeneralUtility::makeInstance(SysTemplatesRepository::class);
         return $sysTemplateRepository->findPluginForTemplateForPid(intval($GLOBALS['TSFE']->id));
     }
 }

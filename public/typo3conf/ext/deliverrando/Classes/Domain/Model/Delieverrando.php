@@ -2,7 +2,9 @@
 
 namespace MyVendor\Deliverrando\Domain\Model;
 
+use TYPO3\CMS\Extbase\Domain\Model\FrontendUserGroup;
 use TYPO3\CMS\Extbase\DomainObject\AbstractEntity;
+use TYPO3\CMS\Extbase\Persistence\ObjectStorage;
 
 class Delieverrando extends AbstractEntity
 {
@@ -35,10 +37,10 @@ class Delieverrando extends AbstractEntity
      * @param string $name
      * @param \TYPO3\CMS\Extbase\Domain\Model\FrontendUserGroup $userGroup
      */
-    public function __construct(string $name, \TYPO3\CMS\Extbase\Domain\Model\FrontendUserGroup $userGroup)
+    public function __construct(string $name, FrontendUserGroup $userGroup)
     {
         $this->name = $name;
-        $this->products = new \TYPO3\CMS\Extbase\Persistence\ObjectStorage();
+        $this->products = new ObjectStorage();
         $this->userGroup = $userGroup;
         $this->address = '';
     }
@@ -64,7 +66,7 @@ class Delieverrando extends AbstractEntity
       * @param \MyVendor\Deliverrando\Domain\Model\Product $product
       * @return void
       */
-    public function addProduct(\MyVendor\Deliverrando\Domain\Model\Product $product) : void
+    public function addProduct(Product $product) : void
     {
         $this->products->attach($product);
     }
@@ -73,16 +75,16 @@ class Delieverrando extends AbstractEntity
       * @param \MyVendor\Deliverrando\Domain\Model\Product $product
       * @return void
       */
-    public function removeProduct(\MyVendor\Deliverrando\Domain\Model\Product $product) : void
+    public function removeProduct(Product $product) : void
     {
         $this->products->detach($product);
     }
 
     /**
-      * @param \TYPO3\CMS\Extbase\Persistence\ObjectStorage<\MyVendor\Deliverrando\Domain\Model\Products>
+      * @param \TYPO3\CMS\Extbase\Persistence\ObjectStorage<\MyVendor\Deliverrando\Domain\Model\Product>
       * @return void
       */
-    public function setProducts(\TYPO3\CMS\Extbase\Persistence\ObjectStorage $products) : void
+    public function setProducts(ObjectStorage $products) : void
     {
         $this->products = $products;
     }
@@ -107,7 +109,7 @@ class Delieverrando extends AbstractEntity
     /**
       * @return \TYPO3\CMS\Extbase\Persistence\ObjectStorage<\MyVendor\Deliverrando\Domain\Model\Product>
       */
-    public function getProducts() : \TYPO3\CMS\Extbase\Persistence\ObjectStorage
+    public function getProducts() : ObjectStorage
     {
         return $this->products;
     }
@@ -115,7 +117,7 @@ class Delieverrando extends AbstractEntity
     /**
      * @return \TYPO3\CMS\Extbase\Domain\Model\FrontendUserGroup
      */
-    public function getUserGroup() : \TYPO3\CMS\Extbase\Domain\Model\FrontendUserGroup
+    public function getUserGroup() : FrontendUserGroup
     {
         return $this->userGroup;
     }
@@ -124,7 +126,7 @@ class Delieverrando extends AbstractEntity
      * @param \TYPO3\CMS\Extbase\Domain\Model\FrontendUserGroup $userGroup
      * @return void
      */
-    public function setUserGroup(\TYPO3\CMS\Extbase\Domain\Model\FrontendUserGroup $userGroup)
+    public function setUserGroup(FrontendUserGroup $userGroup)
     {
         $this->userGroup = $userGroup;
     }

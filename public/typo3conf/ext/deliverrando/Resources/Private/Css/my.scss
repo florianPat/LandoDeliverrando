@@ -32,6 +32,17 @@
     background-color: white; padding: 1vw;
 }
 
+td {
+    padding: 0.75vw;
+}
+
+.deliverrandoSelectionTable td {
+    position: relative;
+    text-align: center;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
 .invisible {
     display: none;
 }
@@ -74,4 +85,12 @@
 
 .accordionClass {
     @extend .card-body;
+}
+
+.errorTextColor {
+    color: darkred;
+}
+
+.width100Percent {
+    width: 100%;
 }

@@ -2,6 +2,7 @@
 
 namespace MyVendor\Deliverrando\Task;
 
+use MyVendor\Deliverrando\Domain\Repository\ProductRepository;
 use Psr\Log\LoggerAwareTrait;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Object\ObjectManager;
@@ -17,7 +18,7 @@ class ProductQuantityCheckerLogic //implements \Psr\Log\LoggerAwareInterface
     public function run() : bool
     {
         $objectManager = GeneralUtility::makeInstance(ObjectManager::class);
-        $productRepository = $objectManager->get(\MyVendor\Deliverrando\Domain\Repository\ProductRepository::class);
+        $productRepository = $objectManager->get(ProductRepository::class);
 
         //$this->logger->info('hello from the scheduler!');
         $allProducts = $productRepository->findAll();

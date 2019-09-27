@@ -22,6 +22,6 @@ class DelieveryTimeValidator extends AbstractValidator
         if(is_integer($value) && $value > 0 && $value <= $maximum) {
             return;
         }
-        $this->addError('The number was not a value between 0 and ' . $maximum . '.', 5009832);
+        $this->addError('The number was not a value between 0 and ' . $maximum . '.', 1569568330);
     }
 }

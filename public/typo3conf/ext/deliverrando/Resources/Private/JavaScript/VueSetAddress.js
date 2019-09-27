@@ -49,6 +49,7 @@
 
                     this.errorMessage = '';
                     this.checkForHousenumber(document.getElementById('registerPersonSubmit'), this.textfieldValue, index);
+                    document.getElementById('autofocusInputElement').focus();
                 },
                 disableSubmit(submitBtn) {
                     submitBtn.setAttribute('disabled', 'disabled');
@@ -56,7 +57,7 @@
                 },
                 populateAutocompleteList() {
                     let url = 'http://dev.virtualearth.net/REST/v1/Locations/DE/' + this.autosuggestValues.postCode +
-                        '/' + encodeURI(this.autosuggestValues.locality) + '/' + encodeURI(this.textfieldValue) +
+                        '/' + encodeURI(this.autosuggestValues.locality) + '/' + encodeURI(this.textfieldValue.trim()) +
                         '?key=' + this.apiKey;
                     this.xhttp.open('GET', url, true);
                     this.xhttp.send();
@@ -64,6 +65,8 @@
                 checkForHousenumber(submitBtn, trimmedTextfieldValue, autocompleteIndex) {
                     if(isNaN(trimmedTextfieldValue.charAt(trimmedTextfieldValue.length - 1))) {
                         this.errorMessage = 'No house number specified!';
+
+                        this.disableSubmit(submitBtn);
                     } else {
                         const it = this.autocompleteList[autocompleteIndex];
                         this.coordinates = it.coordinates[0] + ',' + it.coordinates[1];
@@ -99,8 +102,10 @@
                         const jsonResponse = JSON.parse(this.xhttp.responseText);
                         const responseLength = jsonResponse.resourceSets[0].estimatedTotal;
                         for(let i = 0; i < responseLength; ++i) {
-                            this.autocompleteList.push(new ListItem(jsonResponse.resourceSets[0].resources[i].address.addressLine, this.textfieldValue,
-                                jsonResponse.resourceSets[0].resources[i].point.coordinates));
+                            if(jsonResponse.resourceSets[0].resources[i].address.addressLine !== undefined) {
+                                this.autocompleteList.push(new ListItem(jsonResponse.resourceSets[0].resources[i].address.addressLine, this.textfieldValue,
+                                    jsonResponse.resourceSets[0].resources[i].point.coordinates));
+                            }
                         }
 
                         let submitBtn = document.getElementById('registerPersonSubmit');
@@ -117,6 +122,8 @@
                         } else {
                             this.disableSubmit(submitBtn);
                         }
+                    } else if(this.xhttp.readyState === 4) {
+                        this.errorMessage = 'A server error occurred :/';
                     }
                 };
             },
@@ -124,7 +131,7 @@
                 <div class="registerPersonAddressInput">
                     <!-- TODO: TODO: This is the compilded fluid version. Not really cool, but I messed around with the "normal" html and js objects and events, and I do not get that to work.-->
                     <input hidden="hidden" v-model="coordinates" type="text" required="required" :name="inputNameAttr">
-                    <input @input="inputEvent();" v-model="textfieldValue" autofocus="autofocus" placeholder="Address" type="text">
+                    <input id="autofocusInputElement" @input="inputEvent();" v-model="textfieldValue" autofocus="autofocus" placeholder="Address" type="text">
                     <p v-show="errorMessage" style="background-color: red;">{{ errorMessage }}</p>
     
                     <div class="registerPersonAddressDiv">

@@ -3,10 +3,11 @@
 
 namespace MyVendor\Deliverrando\Command;
 
-
+use MyVendor\Deliverrando\Task\ProductQuantityCheckerLogic;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 class ProductOrderCommand extends Command
 {
@@ -18,7 +19,7 @@ class ProductOrderCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $businessLogic = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(\MyVendor\Deliverrando\Task\ProductQuantityCheckerLogic::class);
+        $businessLogic = GeneralUtility::makeInstance(ProductQuantityCheckerLogic::class);
         return $businessLogic->run() ? 0 : 1;
     }
 }

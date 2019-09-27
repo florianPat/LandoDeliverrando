@@ -25,17 +25,20 @@ function switchToLoginForm()
 }
 
 (function(){
-    let lastAction = document.getElementById('lastAction');
-    console.assert(lastAction !== null, 'LastAction is null!');
-    if(lastAction.innerHTML === 'registerAction') {
-        switchToRegisterForm();
-        accordionToggler('personLogin');
-    } else if(lastAction.innerHTML === 'loginAction') {
-        accordionToggler('personLogin');
-    } else if(lastAction.innerHTML === 'indexAction') {
-        const feLoginElement = document.getElementById('feLogin');
-        if(feLoginElement.firstElementChild.firstElementChild.firstElementChild.innerHTML.indexOf('Login failure') !== -1) {
-            accordionToggler('feLogin');
+    if(document.getElementById('personShowLoginFormText') !== null) {
+        let lastAction = document.getElementById('lastAction');
+        console.assert(lastAction !== null, 'LastAction is null!');
+        if(lastAction.innerHTML === 'registerAction') {
+            switchToRegisterForm();
+            accordionToggler('personLogin');
+        } else if(lastAction.innerHTML === 'loginAction') {
+            accordionToggler('personLogin');
+        } else if(lastAction.innerHTML === 'indexAction') {
+            const feLoginElement = document.getElementById('feLogin');
+            console.assert(feLoginElement !== null, 'FeLoginElement is null!');
+            if(feLoginElement.firstElementChild.firstElementChild.firstElementChild.innerHTML.indexOf('Login failure') !== -1) {
+                accordionToggler('feLogin');
+            }
         }
     }
 })();

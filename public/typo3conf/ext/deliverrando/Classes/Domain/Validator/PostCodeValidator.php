@@ -2,13 +2,27 @@
 
 namespace MyVendor\Deliverrando\Domain\Validator;
 
+use MyVendor\Deliverrando\Controller\Helper\BingMapsRestApiHelper;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Extbase\Configuration\ConfigurationManagerInterface;
+use TYPO3\CMS\Extbase\Object\ObjectManager;
 use TYPO3\CMS\Extbase\Validation\Validator\AbstractValidator;
 
 class PostCodeValidator extends AbstractValidator
 {
     protected $supportedOptions = [
-      'apiKey' => [null, 'Bing API Key', 'string', true],
+      'apiKey' => ['', 'Bing API Key', 'string'],
     ];
+
+    /**
+     * @var ConfigurationManagerInterface
+     */
+    protected $configurationManager;
+
+    public function injectConfigurationManager(ConfigurationManagerInterface $configurationManager)
+    {
+        $this->configurationManager = $configurationManager;
+    }
 
     /**
      * @param mixed $value
@@ -16,19 +30,24 @@ class PostCodeValidator extends AbstractValidator
      */
     protected function isValid($value) : void
     {
-        $response = file_get_contents('http://dev.virtualearth.net/REST/v1/Locations?countryRegion=DE&postalCode=' . $value .
-            '&key=', $this->options['apiKey']);
-        $json = json_decode($response);
-        assert($json->statusCode == 200);
+        $apiKey = $this->options['apiKey'];
+        if($apiKey === '') {
+            $apiKey = $this->configurationManager
+                ->getConfiguration(ConfigurationManagerInterface::CONFIGURATION_TYPE_SETTINGS, 'deliverrando')['bingApiKey'];
+        }
+
+        $bingMapsRestApiHelper = GeneralUtility::makeInstance(ObjectManager::class)->get(BingMapsRestApiHelper::class);
+
+        $json = $bingMapsRestApiHelper->makeApiCall('/Locations?countryRegion=DE&postalCode=' . $value, $apiKey);
+        if($json === 'InvalidStatusCode') {
+            $this->addError('person.address:There was an error on the server :/', 1569568236);
+            return;
+        }
 
         $ressourceSetLength = $json->resourceSets[0]->estimatedTotal;
 
         if($ressourceSetLength === 0 || (!isset($json->resourceSets[0]->resources[0]->address->postalCode)) || $json->resourceSets[0]->resources[0]->address->postalCode !== $value) {
-            $this->addError("person.address:This is not a valid post code!", 23823892894839);
+            $this->addError("person.address:This is not a valid post code!", 1569568268);
         }
-
-        //TODO: I should set the locality! (But not in the Validator! (1. It is no validation, 2. I can not "persist" it here))
-        //NOTE: But works even without the locality, so I do not care about it for now
-        //$value->setAddress($value->getAddress() . ';' . $json->resourceSets[0]->resources[0]->address->locality);
     }
 }
