@@ -18,9 +18,16 @@ function buildSass()
         .pipe(gulp.dest('./Resources/Public/Css/'));
 }
 
+function buildJsDeps()
+{
+    return gulp.src(['./Resources/Private/JavaScript/deps/jquery.min.js', './Resources/Private/JavaScript/deps/bootstrap.bundle.min.js'])
+        .pipe(concat('deps.js'))
+        .pipe(gulp.dest('./Resources/Private/JavaScript/'));
+}
+
 function buildJs()
 {
-    return gulp.src('./Resources/Private/JavaScript/**/*.js')
+    return gulp.src(['./Resources/Private/JavaScript/**/*.js', '!./Resources/Private/JavaScript/deps/**/*'])
         .pipe(concat('main.js'))
         .pipe(gulp.dest('./Resources/Public/JavaScript/'));
 }
